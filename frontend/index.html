@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>acevegantt.</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: #f5f3ef;
+            color: #141414;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        
+        #login-form {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        #login-form input {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        
+        button {
+            background-color: #3d295a;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-family: 'Roboto', Arial, sans-serif;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            background-color: #2a1c3e;
+        }
+		
+		#logoutButton {
+			position: absolute;
+			top: 20px;
+			right: 20px;
+		}
+        
+        #chart-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #3d295a;
+            margin-bottom: 30px;
+            font-size: 1.75em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        #gantt-chart {
+            width: 100%;
+            overflow-x: auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        #gantt-chart svg {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .tooltip {
+            position: absolute;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        
+        @media (max-width: 768px) {
+            #chart-container {
+                padding: 10px;
+            }
+        
+            h1 {
+                font-size: 1.5em;
+            }
+        
+            #gantt-chart {
+                padding: 10px;
+            }
+        }
+		
+		#branding {
+			position: fixed;
+			bottom: 0.75em;
+			left: 0.75em;
+			background-color: #3D295A;
+			padding: 0.5em 0.5em;
+			border-radius: 5px;
+		}
+
+		#branding h3 {
+			margin: 0;
+			font-family: 'Roboto', sans-serif;
+			font-weight: bold;
+			color: #f5f3ef;
+			font-size: 0.75em;
+		}
+    </style>
+</head>
+<body>
+	<div id="branding">
+		<h3>acevegantt.</h3>
+	</div>
+    <div id="login-form">
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+    </div>
+    <div id="chart-container" style="display: none;">
+		<button id="logoutButton" onclick="logout()">Logout</button>
+        <h1>Event Name</h1>
+        <div id="gantt-chart"></div>
+    </div>
+    <script>
+        let token = '';
+        
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password }),
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Login failed');
+                }
+                
+                const data = await response.json();
+                token = data.token;
+				localStorage.setItem('token', token);
+                
+                document.getElementById('login-form').style.display = 'none';
+                document.getElementById('chart-container').style.display = 'block';
+                fetchTasks();
+            } catch (error) {
+                alert('Login failed. Please try again.');
+            }
+        }
+        
+        async function fetchTasks() {
+            try {
+				const storedToken = localStorage.getItem('token');
+				const response = await fetch('/api/tasks', {
+					headers: {
+						'Authorization': `Bearer ${storedToken}`,
+					},
+				});
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch tasks');
+                }
+                
+                const tasks = await response.json();
+                drawGantt(tasks);
+            } catch (error) {
+                alert('Failed to fetch tasks. Please try again.');
+            }
+        }
+        
+        function drawGantt(tasks) {
+            const chartContainer = document.getElementById("gantt-chart");
+            chartContainer.innerHTML = '';
+
+            const chartStart = new Date(Math.min(...tasks.map(t => new Date(t.start))));
+            const chartEnd = new Date(Math.max(...tasks.map(t => new Date(t.end))));
+            const chartDuration = chartEnd - chartStart;
+        
+            const svgNS = "http://www.w3.org/2000/svg";
+            const chart = document.createElementNS(svgNS, "svg");
+            chart.setAttribute("width", "100%");
+            chart.setAttribute("height", tasks.length * 50 + 70);
+            chart.setAttribute("viewBox", `0 0 1000 ${tasks.length * 50 + 70}`);
+            chartContainer.appendChild(chart);
+        
+            const timeline = document.createElementNS(svgNS, "line");
+            timeline.setAttribute("x1", "200");
+            timeline.setAttribute("y1", "45");
+            timeline.setAttribute("x2", "1000");
+            timeline.setAttribute("y2", "45");
+            timeline.setAttribute("stroke", "#333");
+            timeline.setAttribute("stroke-width", "2");
+            chart.appendChild(timeline);
+        
+            const months = [];
+            const years = new Set();
+            for (let d = new Date(chartStart); d <= chartEnd; d.setMonth(d.getMonth() + 1)) {
+                months.push(new Date(d));
+                years.add(d.getFullYear());
+            }
+            
+            Array.from(years).forEach((year, index) => {
+                const yearStart = new Date(year, 0, 1);
+                const yearEnd = new Date(year, 11, 31);
+                const startX = Math.max(200, 200 + ((yearStart - chartStart) / chartDuration) * 800);
+                const endX = Math.min(1000, 200 + ((yearEnd - chartStart) / chartDuration) * 800);
+                const width = endX - startX;
+        
+                const yearRect = document.createElementNS(svgNS, "rect");
+                yearRect.setAttribute("x", startX);
+                yearRect.setAttribute("y", "10");
+                yearRect.setAttribute("width", width);
+                yearRect.setAttribute("height", "20");
+                yearRect.setAttribute("fill", index % 2 === 0 ? "#f0f0f0" : "#e0e0e0");
+                chart.appendChild(yearRect);
+        
+                const yearText = document.createElementNS(svgNS, "text");
+                yearText.setAttribute("x", startX + width / 2);
+                yearText.setAttribute("y", "25");
+                yearText.setAttribute("font-size", "12");
+                yearText.setAttribute("text-anchor", "middle");
+                yearText.textContent = year;
+                chart.appendChild(yearText);
+            });
+        
+            months.forEach((date, index) => {
+                const text = document.createElementNS(svgNS, "text");
+                text.setAttribute("x", 200 + (index * 800 / (months.length - 1)));
+                text.setAttribute("y", "40");
+                text.setAttribute("font-size", "10");
+                text.setAttribute("text-anchor", "middle");
+                text.textContent = date.toLocaleString('default', { month: 'short' });
+                chart.appendChild(text);
+            });
+        
+            tasks.forEach((task, index) => {
+                const taskStart = (new Date(task.start) - chartStart) / chartDuration;
+                const taskDuration = (new Date(task.end) - new Date(task.start)) / chartDuration;
+        
+                const group = document.createElementNS(svgNS, "g");
+                chart.appendChild(group);
+        
+                const rect = document.createElementNS(svgNS, "rect");
+                rect.setAttribute("x", 200 + (taskStart * 800));
+                rect.setAttribute("y", 60 + (index * 50));
+                rect.setAttribute("width", taskDuration * 800);
+                rect.setAttribute("height", "30");
+                rect.setAttribute("fill", "#3D295A");
+                rect.setAttribute("rx", "5");
+                rect.setAttribute("ry", "5");
+                group.appendChild(rect);
+        
+                if (task.progress > 0) {
+                    const progress = document.createElementNS(svgNS, "rect");
+                    progress.setAttribute("x", 200 + (taskStart * 800));
+                    progress.setAttribute("y", 60 + (index * 50));
+                    progress.setAttribute("width", (taskDuration * 800) * (task.progress / 100));
+                    progress.setAttribute("height", "30");
+                    progress.setAttribute("fill", "#228B22");
+                    progress.setAttribute("rx", "5");
+                    progress.setAttribute("ry", "5");
+                    group.appendChild(progress);
+                }
+        
+                const text = document.createElementNS(svgNS, "text");
+                text.setAttribute("x", "10");
+                text.setAttribute("y", 80 + (index * 50));
+                text.setAttribute("font-size", "14");
+                text.textContent = task.name;
+                chart.appendChild(text);
+        
+                group.addEventListener('mouseover', (e) => showTooltip(e, task));
+                group.addEventListener('mouseout', hideTooltip);
+            });
+        }
+        
+        function showTooltip(event, task) {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip';
+            tooltip.innerHTML = `
+                <strong>${task.name}</strong><br>
+                Start: ${new Date(task.start).toDateString()}<br>
+                End: ${new Date(task.end).toDateString()}<br>
+                Faculty In-charge: ${task.faculty}<br>
+                Teaching Assistant: ${task.ta}<br>
+                Progress: ${task.progress}%<br>
+                Comments: ${task.comments}
+            `;
+            tooltip.style.left = (event.pageX + 10) + 'px';
+            tooltip.style.top = (event.pageY + 10) + 'px';
+            document.body.appendChild(tooltip);
+        }
+        
+        function hideTooltip() {
+            const tooltip = document.querySelector('.tooltip');
+            if (tooltip) {
+                tooltip.remove();
+            }
+        }
+		
+		function logout() {
+			localStorage.removeItem('token');
+			window.location.href = '/';
+		}
+		
+		document.addEventListener('DOMContentLoaded', function() {
+			const token = localStorage.getItem('token');
+			if (token) {
+				document.getElementById('login-form').style.display = 'none';
+				document.getElementById('chart-container').style.display = 'block';
+				fetchTasks();
+			}
+		});
+        
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        const debouncedFetchTasks = debounce(() => {
+            if (token) {
+                fetchTasks();
+            }
+        }, 250);
+
+        window.addEventListener('resize', debouncedFetchTasks);
+    </script>
+</body>
+</html>
