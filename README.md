@@ -1,5 +1,5 @@
 # acevegantt.
-[![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD_3--Clause-141414.svg)](https://github.com/ekjaisal/acevegantt/blob/main/LICENSE) [![CodeFactor](https://www.codefactor.io/repository/github/ekjaisal/acevegantt/badge/main)](https://www.codefactor.io/repository/github/ekjaisal/acevegantt/overview/main)
+[![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD_3--Clause-141414.svg)](https://github.com/ekjaisal/acevegantt/blob/main/LICENSE) [![CodeFactor](https://www.codefactor.io/repository/github/ekjaisal/acevegantt/badge/main)](https://www.codefactor.io/repository/github/ekjaisal/acevegantt/overview/main) [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/ekjaisal/acevegantt/badge)](https://scorecard.dev/viewer/?uri=github.com/ekjaisal/acevegantt) [![GitHub stars](https://img.shields.io/github/stars/ekjaisal/WovenSnips?color=141414)](https://github.com/ekjaisal/WovenSnips/stargazers)
 
 acevegantt is a free and open-source Gantt chart implementation for managing academic events. It provides a user-friendly interface for creating, editing, and visualising tasks in a Gantt chart format, making it ideal for planning and tracking academic conferences, workshops, and other events.
 
