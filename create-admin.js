@@ -1,3 +1,8 @@
+/**
+ * Copyright © 2024, Jaisal E. K.
+ * This source code is licensed under the BSD-3-Clause License
+ */
+
 require('dotenv').config();
 const bcrypt = require('bcryptjs');
 const admin = require('firebase-admin');
@@ -9,8 +14,8 @@ admin.initializeApp({
 
 const db = admin.firestore();
 
-const adminUsername = 'add_admin_username';
-const adminPassword = 'add_admin_password';
+const adminUsername = 'set_admin_user';
+const adminPassword = 'set_admin_password';
 
 async function createAdminUser() {
   try {
@@ -26,14 +31,14 @@ async function createAdminUser() {
 
     await db.collection('users').add({
       username: adminUsername,
-      password: hashedPassword
+      password: hashedPassword,
+      role: 'admin'
     });
     
     console.log('Admin user created successfully');
   } catch (error) {
     console.error('Error creating admin user:', error.message);
   } finally {
-
     admin.app().delete();
   }
 }

@@ -1,6 +1,11 @@
+/**
+ * Copyright © 2024, Jaisal E. K.
+ * This source code is licensed under the BSD-3-Clause License
+ */
+
 const express = require('express');
 const { db } = require('../firebase');
-const auth = require('../middleware/auth');
+const { auth } = require('../middleware/auth');
 
 const router = express.Router();
 

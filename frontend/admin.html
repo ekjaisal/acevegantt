@@ -1,9 +1,14 @@
+<!--
+ Copyright © 2024, Jaisal E. K.
+ This source code is licensed under the BSD-3-Clause License
+-->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>acevegantt. Admin Panel</title>
+    <title>Admin Panel</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -97,14 +102,14 @@
 		<h3>acevegantt.</h3>
 	</div>
     <div id="login-form">
-        <h2>acevegantt. Admin Login</h2>
+        <h2>Admin Login</h2>
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password">
         <button onclick="login()">Login</button>
     </div>
 
     <div id="admin-panel" style="display: none;">
-        <h1>acevegantt. Admin Panel</h1>
+        <h1>Admin Panel</h1>
         <button id="logoutButton" onclick="logout()">Logout</button>
         <h2>Add/Edit Task</h2>
         <input type="hidden" id="task-id">
@@ -138,7 +143,7 @@
         <input type="password" id="new-password" placeholder="Password">
         <button onclick="addUser()">Add User</button>
         
-        <h2>User Management</h2>
+        <h2>Manage Users</h2>
         <table id="users-table">
             <thead>
                 <tr>
@@ -163,10 +168,16 @@
         function checkAdminToken() {
             token = localStorage.getItem('adminToken');
             if (token) {
-                document.getElementById('login-form').style.display = 'none';
-                document.getElementById('admin-panel').style.display = 'block';
-                fetchTasks();
-                fetchUsers();
+                const decodedToken = JSON.parse(atob(token.split('.')[1]));
+                if (decodedToken.role === 'admin') {
+                    document.getElementById('login-form').style.display = 'none';
+                    document.getElementById('admin-panel').style.display = 'block';
+                    fetchTasks();
+                    fetchUsers();
+                } else {
+                    alert('Access denied. Admin privileges required.');
+                    logout();
+                }
             } else {
                 document.getElementById('login-form').style.display = 'block';
                 document.getElementById('admin-panel').style.display = 'none';
@@ -184,6 +195,9 @@
                 });
                 if (!response.ok) throw new Error('Login failed');
                 const data = await response.json();
+                if (data.role !== 'admin') {
+                    throw new Error('Access denied. Admin privileges required.');
+                }
                 token = data.token;
                 localStorage.setItem('adminToken', token);
                 checkAdminToken();
@@ -192,7 +206,6 @@
                 alert('Login failed: ' + error.message);
             }
         }
-
         function logout() {
             localStorage.removeItem('adminToken');
             token = null;

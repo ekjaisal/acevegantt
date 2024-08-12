@@ -1,33 +1,24 @@
 # acevegantt.
+[![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD_3--Clause-141414.svg)](https://github.com/ekjaisal/acevegantt/blob/main/LICENSE) [![CodeFactor](https://www.codefactor.io/repository/github/ekjaisal/acevegantt/badge/main)](https://www.codefactor.io/repository/github/ekjaisal/acevegantt/overview/main)
 
 acevegantt is a free and open-source Gantt chart implementation for managing academic events. It provides a user-friendly interface for creating, editing, and visualising tasks in a Gantt chart format, making it ideal for planning and tracking academic conferences, workshops, and other events.
 
-## Features
+## Requirements 📋
 
-- Task management (create, edit, delete)
-- Drag-and-drop task reordering
-- User authentication
-- User management (for admins)
-- Responsive design
-
-## Prerequisites
-
-Before you begin, ensure you have met the following requirements:
-
-- Node.js (v14 or later)
-- npm (usually comes with Node.js)
+- Node.js
+- npm
 - Firebase account
 
-## Installation
+## Installation 🚀
 
 1. Clone the repository:
-   ```cmd
+   ```bash
    git clone https://github.com/ekjaisal/acevegantt.git
    cd acevegantt
    ```
 
 2. Install dependencies:
-   ```cmd
+   ```bash
    npm install
    ```
 
@@ -40,17 +31,23 @@ Before you begin, ensure you have met the following requirements:
      - Click "Generate new private key"
      - Save the JSON file as `serviceAccountKey.json` in the `backend` folder
 
+   **Note:** Do not upload the `serviceAccountKey.json` to a public repository.
+
 4. Configure environment variables:
    - Create a `.env` file in the root directory
    - Add the following variables:
-     `FIREBASE_PROJECT_ID=your-project-id`
-     `JWT_SECRET=your-jwt-secret`
+     ```
+     FIREBASE_PROJECT_ID=your-project-id
+     JWT_SECRET=your-jwt-secret
+     ```
    -  Replace `your-project-id` with your Firebase project ID and `your-jwt-secret` with a secure random string for JWT encryption.
 
-## Usage
+   **Note:** Do not upload the `.env` to a public repository.
+
+## Usage 💻
 
 1. Start the server:
-   ```cmd
+   ```bash
    npm start
    ```
 
@@ -61,29 +58,41 @@ Before you begin, ensure you have met the following requirements:
 3. Create an admin user:
    - Open `create-admin.js` and modify the `const adminUsername` and `const adminPassword` to set up the admin username and password.
    - Run the following command to create an initial admin user:
-   ```cmd
+   ```bash
    node create-admin.js
    ```
 
-## Testing
+## Testing 🧪
 
 To test run the application, run the following command:
 
-```
+```bash
 node server.js
 ```
 
-## Deployment
+## Deployment 🚀
 
 1. Choose a hosting platform
 2. Set up the necessary environment variables (contained in .env) on your hosting platform
 3. Deploy your code following the hosting platform's guidelines
 
-## License
+## Third-Party Libraries and Services 🛠️
 
-This project is licensed under the BSD-3-Clause License. See the [LICENSE](LICENSE) file for details.
+This project uses the following open-source libraries:
 
-## Acknowledgements
-acevegantt has benefitted significantly from the assistance of Anthropic's [Claude 3.5 Sonnet](https://www.anthropic.com/news/claude-3-5-sonnet) with all the heavy lifting associated with coding.
+- [Express](https://expressjs.com/) for the web server framework
+- [Firebase Admin SDK](https://firebase.google.com/docs/admin/setup) for database and authentication
+- [bcryptjs](https://github.com/dcodeIO/bcrypt.js) for password hashing
+- [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) for JWT authentication
+- [dotenv](https://github.com/motdotla/dotenv) for environment variable management
+- [cors](https://github.com/expressjs/cors) for Cross-Origin Resource Sharing
+
+## License 📄
+
+This project is licensed under the BSD 3-Clause License. See the [LICENSE](LICENSE) file for details.
+
+## Acknowledgements 🤝🏾
+
+acevegantt has benefitted significantly from the assistance of Anthropic's [Claude 3.5 Sonnet](https://www.anthropic.com/news/claude-3-5-sonnet) with all the heavy lifting associated with coding and some of the many ideas, suggestions, and feedback from [Sarah Harniswala](https://github.com/SarahHarniswala).
 
 <a href="https://www.buymeacoffee.com/ekjaisal" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 40px !important;width: 160px !important;" ></a>
