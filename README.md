@@ -16,12 +16,14 @@ acevegantt is a free and open-source Gantt chart implementation for managing aca
 ## Installation 🚀
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/ekjaisal/acevegantt.git
    cd acevegantt
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```
@@ -55,6 +57,7 @@ acevegantt is a free and open-source Gantt chart implementation for managing aca
 ## Usage 💻
 
 1. Start the server:
+
    ```bash
    npm start
    ```
