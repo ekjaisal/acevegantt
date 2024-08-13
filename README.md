@@ -3,6 +3,10 @@
 
 acevegantt is a free and open-source Gantt chart implementation for managing academic events. It provides a user-friendly interface for creating, editing, and visualising tasks in a Gantt chart format, making it ideal for planning and tracking academic conferences, workshops, and other events.
 
+![acevegantt Main Interface](assets/screenshots/main_interface.jpg)
+
+![acevegantt Admin Panel](assets/screenshots/admin_panel.jpg)
+
 ## Requirements 📋
 
 - Node.js
@@ -23,25 +27,29 @@ acevegantt is a free and open-source Gantt chart implementation for managing aca
    ```
 
 3. Set up Firebase:
-   - Go to the [Firebase Console](https://console.firebase.google.com/)
-   - Create a new project
-   - Set up Firebase database
-   - Generate a new private key for your service account:
-     - Go to Project settings > Service Accounts
-     - Click "Generate new private key"
-     - Save the JSON file as `serviceAccountKey.json` in the `backend` folder
-
+   
+   **[Firebase Console](https://console.firebase.google.com) → Create a Project →  Set up Firestore Database**
+   
+   Generate a new private key for the service account:
+   
+   **Project Settings → Service Accounts → Generate New Private Key**
+   
+   Save the JSON file as `serviceAccountKey.json` in the `backend` folder
+   
    **Note:** Do not upload the `serviceAccountKey.json` to a public repository.
-
+   
 4. Configure environment variables:
-   - Create a `.env` file in the root directory
-   - Add the following variables:
-     ```
-     FIREBASE_PROJECT_ID=your-project-id
-     JWT_SECRET=your-jwt-secret
-     ```
-   -  Replace `your-project-id` with your Firebase project ID and `your-jwt-secret` with a secure random string for JWT encryption.
-
+   
+   Create a `.env` file in the root directory
+   
+   Add the following variables:
+   ```
+   FIREBASE_PROJECT_ID=your-project-id
+   JWT_SECRET=your-jwt-secret
+   ```
+   
+   Replace `your-project-id` with the Firebase project ID and `your-jwt-secret` with a secure random string for JWT encryption.
+   
    **Note:** Do not upload the `.env` to a public repository.
 
 ## Usage 💻
@@ -52,19 +60,24 @@ acevegantt is a free and open-source Gantt chart implementation for managing aca
    ```
 
 2. Access the application:
-   - Open a web browser and go to `http://localhost:5000` for the main Gantt chart view
-   - Go to `http://localhost:5000/admin` for the admin panel
+   
+   **Main Interface →** `http://localhost:5000`
 
+   **Admin Panel →** `http://localhost:5000/admin`
+   
 3. Create an admin user:
-   - Open `create-admin.js` and modify the `const adminUsername` and `const adminPassword` to set up the admin username and password.
-   - Run the following command to create an initial admin user:
+   
+   `create-admin.js` → modify `const adminUsername` and `const adminPassword` to set up the admin username and password.
+   
+   Run the following command to create an initial admin user:
+   
    ```bash
    node create-admin.js
    ```
 
 ## Testing 🧪
 
-To test run the application, run the following command:
+To test the application locally, run the following command:
 
 ```bash
 node server.js
@@ -72,20 +85,20 @@ node server.js
 
 ## Deployment 🚀
 
-1. Choose a hosting platform
-2. Set up the necessary environment variables (contained in .env) on your hosting platform
-3. Deploy your code following the hosting platform's guidelines
+1. Choose a hosting platform that provides a generous free tier.
+2. Set up the necessary environment variables (find in .env) on the hosting platform.
+3. Deploy the code following the hosting platform's guidelines.
 
 ## Third-Party Libraries and Services 🛠️
 
 This project uses the following open-source libraries:
 
-- [Express](https://expressjs.com/) for the web server framework
-- [Firebase Admin SDK](https://firebase.google.com/docs/admin/setup) for database and authentication
-- [bcryptjs](https://github.com/dcodeIO/bcrypt.js) for password hashing
-- [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) for JWT authentication
-- [dotenv](https://github.com/motdotla/dotenv) for environment variable management
-- [cors](https://github.com/expressjs/cors) for Cross-Origin Resource Sharing
+- [Express](https://expressjs.com/) for the web server framework,
+- [Firebase Admin SDK](https://firebase.google.com/docs/admin/setup) for database and authentication,
+- [bcrypt.js](https://github.com/dcodeIO/bcrypt.js) for password hashing,
+- [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) for JWT authentication,
+- [dotenv](https://github.com/motdotla/dotenv) for environment variable management, and
+- [CORS](https://github.com/expressjs/cors) for Cross-Origin Resource Sharing.
 
 ## License 📄
 
