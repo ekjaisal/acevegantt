@@ -283,86 +283,86 @@
         </table>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-    <script>
-        let token = null;
-        const apiUrl = '/api';
-        let tasks = [];
+	<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+	<script>
+		let token = null;
+		const apiUrl = '/api';
+		let tasks = [];
 
-        document.addEventListener('DOMContentLoaded', function() {
-            checkAdminToken();
-        });
+		document.addEventListener('DOMContentLoaded', function() {
+			checkAdminToken();
+		});
 
-        function checkAdminToken() {
-            token = localStorage.getItem('adminToken');
-            if (token) {
-                const decodedToken = JSON.parse(atob(token.split('.')[1]));
-                if (decodedToken.role === 'admin') {
-                    document.getElementById('login-form').style.display = 'none';
-                    document.getElementById('admin-panel').style.display = 'block';
-                    fetchTasks();
-                    fetchUsers();
-                } else {
-                    alert('Access denied. Admin privileges required.');
-                    logout();
-                }
-            } else {
-                document.getElementById('login-form').style.display = 'block';
-                document.getElementById('admin-panel').style.display = 'none';
-            }
-        }
+		function checkAdminToken() {
+			token = localStorage.getItem('adminToken');
+			if (token) {
+				const decodedToken = JSON.parse(atob(token.split('.')[1]));
+				if (decodedToken.role === 'admin') {
+					document.getElementById('login-form').style.display = 'none';
+					document.getElementById('admin-panel').style.display = 'block';
+					fetchTasks();
+					fetchUsers();
+				} else {
+					alert('Access denied. Admin privileges required.');
+					logout();
+				}
+			} else {
+				document.getElementById('login-form').style.display = 'block';
+				document.getElementById('admin-panel').style.display = 'none';
+			}
+		}
 
-        async function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            try {
-                const response = await fetch(`${apiUrl}/auth/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-                if (!response.ok) throw new Error('Login failed');
-                const data = await response.json();
-                if (!data.adminToken) {
-                    throw new Error('Access denied. Admin privileges required.');
-                }
-                token = data.adminToken;
-                localStorage.setItem('adminToken', token);
-                checkAdminToken();
-            } catch (error) {
-                console.error('Login error:', error);
-                alert('Login failed: ' + error.message);
-            }
-        }
+		async function login() {
+			const username = document.getElementById('username').value;
+			const password = document.getElementById('password').value;
+			try {
+				const response = await fetch(`${apiUrl}/auth/login`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ username, password })
+				});
+				if (!response.ok) throw new Error('Login failed');
+				const data = await response.json();
+				if (!data.adminToken) {
+					throw new Error('Access denied. Admin privileges required.');
+				}
+				token = data.adminToken;
+				localStorage.setItem('adminToken', token);
+				checkAdminToken();
+			} catch (error) {
+				console.error('Login error:', error);
+				alert('Login failed: ' + error.message);
+			}
+		}
 
-        function logout() {
-            localStorage.removeItem('adminToken');
-            token = null;
-            checkAdminToken();
-        }
+		function logout() {
+			localStorage.removeItem('adminToken');
+			token = null;
+			checkAdminToken();
+		}
 
-        function viewUserInterface() {
-            window.open('/', '_blank');
-        }
+		function viewUserInterface() {
+			window.open('/', '_blank');
+		}
 
-        async function fetchTasks() {
-            try {
-                const response = await fetch(`${apiUrl}/tasks`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to fetch tasks');
-                }
-                tasks = await response.json();
-                console.log('Tasks fetched:', tasks);
-                displayTasks();
-            } catch (error) {
-                console.error('Error fetching tasks:', error);
-                alert('Error fetching tasks: ' + error.message);
-            }
-        }
-        
+		async function fetchTasks() {
+			try {
+				const response = await fetch(`${apiUrl}/tasks`, {
+					headers: { 'Authorization': `Bearer ${token}` }
+				});
+				if (!response.ok) {
+					const errorData = await response.json();
+					throw new Error(errorData.error || 'Failed to fetch tasks');
+				}
+				tasks = await response.json();
+				console.log('Tasks fetched:', tasks);
+				displayTasks();
+			} catch (error) {
+				console.error('Error fetching tasks:', error);
+				alert('Error fetching tasks: ' + error.message);
+			}
+		}
+		
 		function displayTasks() {
 			const tbody = document.querySelector('#tasks-table tbody');
 			tbody.innerHTML = '';
@@ -386,50 +386,49 @@
 				tbody.appendChild(tr);
 			});
 
-            document.querySelectorAll('.edit-btn').forEach(btn => {
-                ['click', 'touchstart'].forEach(eventType => {
-                    btn.addEventListener(eventType, (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        editTask(btn.getAttribute('data-id'));
-                    }, { passive: false });
-                });
-            });
+			document.querySelectorAll('.edit-btn').forEach(btn => {
+				btn.addEventListener('click', (e) => {
+					e.preventDefault();
+					editTask(btn.getAttribute('data-id'));
+				});
+			});
 
-            new Sortable(tbody, {
-                animation: 150,
-                ghostClass: 'dragging',
-                handle: '.handle',
-                onEnd: function(evt) {
-                    const newOrder = Array.from(tbody.children).map((tr, index) => ({
-                        id: tr.getAttribute('data-id'),
-                        order: index
-                    }));
-                    updateTaskOrder(newOrder);
-                }
-            });
-        }
+			new Sortable(tbody, {
+				animation: 150,
+				ghostClass: 'dragging',
+				handle: '.handle',
+				onEnd: function(evt) {
+					const newOrder = Array.from(tbody.children).map((tr, index) => ({
+						id: tr.getAttribute('data-id'),
+						order: index
+					}));
+					updateTaskOrder(newOrder);
+				},
+				delayOnTouchOnly: true,
+				delay: 100
+			});
+		}
 
-        async function updateTaskOrder(newOrder) {
-            try {
-                const response = await fetch(`${apiUrl}/tasks/reorder`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(newOrder)
-                });
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to update task order');
-                }
-                await fetchTasks();
-            } catch (error) {
-                console.error('Error updating task order:', error);
-                alert('Error updating task order: ' + error.message);
-            }
-        }
+		async function updateTaskOrder(newOrder) {
+			try {
+				const response = await fetch(`${apiUrl}/tasks/reorder`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${token}`
+					},
+					body: JSON.stringify(newOrder)
+				});
+				if (!response.ok) {
+					const errorData = await response.json();
+					throw new Error(errorData.error || 'Failed to update task order');
+				}
+				await fetchTasks();
+			} catch (error) {
+				console.error('Error updating task order:', error);
+				alert('Error updating task order: ' + error.message);
+			}
+		}
 
 		async function saveTask() {
 			const taskId = document.getElementById('task-id').value;
@@ -478,274 +477,283 @@
 			}
 		}
 
-        function editTask(taskId) {
-            const task = tasks.find(t => t.id === taskId);
-            if (task) {
-                document.getElementById('task-id').value = task.id;
-                document.getElementById('task-name').value = task.name;
-                document.getElementById('task-start').value = task.start;
-                document.getElementById('task-end').value = task.end;
-                document.getElementById('task-progress').value = task.progress;
-                document.getElementById('task-faculty').value = task.faculty;
-                document.getElementById('task-ta').value = task.ta;
-                document.getElementById('task-comments').value = task.comments;
-                
-                document.getElementById('task-name').scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }
+		function editTask(taskId) {
+			const task = tasks.find(t => t.id === taskId);
+			if (task) {
+				document.getElementById('task-id').value = task.id;
+				document.getElementById('task-name').value = task.name;
+				document.getElementById('task-start').value = task.start;
+				document.getElementById('task-end').value = task.end;
+				document.getElementById('task-progress').value = task.progress;
+				document.getElementById('task-faculty').value = task.faculty;
+				document.getElementById('task-ta').value = task.ta;
+				document.getElementById('task-comments').value = task.comments;
+				
+				const editForm = document.getElementById('task-name');
+				editForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-        async function deleteTask(taskId) {
-            if (!confirm('Are you sure you want to delete this task?')) return;
-            try {
-                const response = await fetch(`${apiUrl}/tasks/${taskId}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (!response.ok) throw new Error('Failed to delete task');
-                await fetchTasks();
-                alert('Task deleted successfully');
-            } catch (error) {
-                console.error('Error deleting task:', error);
-                alert('Error deleting task: ' + error.message);
-            }
-        }
+				// Ensure the form is visible on mobile
+				setTimeout(() => {
+					const formRect = editForm.getBoundingClientRect();
+					if (formRect.top < 0) {
+						window.scrollBy(0, formRect.top - 20);
+					}
+				}, 500);
+			}
+		}
 
-        function clearTaskForm() {
-            document.getElementById('task-id').value = '';
-            document.getElementById('task-name').value = '';
-            document.getElementById('task-start').value = '';
-            document.getElementById('task-end').value = '';
-            document.getElementById('task-progress').value = '';
-            document.getElementById('task-faculty').value = '';
-            document.getElementById('task-ta').value = '';
-            document.getElementById('task-comments').value = '';
-        }
+		async function deleteTask(taskId) {
+			if (!confirm('Are you sure you want to delete this task?')) return;
+			try {
+				const response = await fetch(`${apiUrl}/tasks/${taskId}`, {
+					method: 'DELETE',
+					headers: { 'Authorization': `Bearer ${token}` }
+				});
+				if (!response.ok) throw new Error('Failed to delete task');
+				await fetchTasks();
+				alert('Task deleted successfully');
+			} catch (error) {
+				console.error('Error deleting task:', error);
+				alert('Error deleting task: ' + error.message);
+			}
+		}
 
-        async function addUser() {
-            const username = document.getElementById('new-username').value;
-            const password = document.getElementById('new-password').value;
-            try {
-                const response = await fetch(`${apiUrl}/auth/register`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ username, password })
-                });
-                if (!response.ok) throw new Error('Failed to add user');
-                alert('User added successfully');
-                document.getElementById('new-username').value = '';
-                document.getElementById('new-password').value = '';
-                await fetchUsers();
-            } catch (error) {
-                console.error('Error adding user:', error);
-                alert('Error adding user: ' + error.message);
-            }
-        }
+		function clearTaskForm() {
+			document.getElementById('task-id').value = '';
+			document.getElementById('task-name').value = '';
+			document.getElementById('task-start').value = '';
+			document.getElementById('task-end').value = '';
+			document.getElementById('task-progress').value = '';
+			document.getElementById('task-faculty').value = '';
+			document.getElementById('task-ta').value = '';
+			document.getElementById('task-comments').value = '';
+		}
 
-        async function fetchUsers() {
-            try {
-                const response = await fetch(`${apiUrl}/auth/users`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (!response.ok) throw new Error('Failed to fetch users');
-                const users = await response.json();
-                console.log('Fetched users:', users);
-                displayUsers(users);
-            } catch (error) {
-                console.error('Error fetching users:', error);
-                alert('Error fetching users: ' + error.message);
-            }
-        }
+		async function addUser() {
+			const username = document.getElementById('new-username').value;
+			const password = document.getElementById('new-password').value;
+			try {
+				const response = await fetch(`${apiUrl}/auth/register`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${token}`
+					},
+					body: JSON.stringify({ username, password })
+				});
+				if (!response.ok) throw new Error('Failed to add user');
+				alert('User added successfully');
+				document.getElementById('new-username').value = '';
+				document.getElementById('new-password').value = '';
+				await fetchUsers();
+			} catch (error) {
+				console.error('Error adding user:', error);
+				alert('Error adding user: ' + error.message);
+			}
+		}
 
-        function displayUsers(users) {
-            const tbody = document.querySelector('#users-table tbody');
-            tbody.innerHTML = '';
-            users.forEach(user => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td data-label="Username">${user.username}</td>
-                    <td data-label="Actions">
-                        <button onclick="changePassword('${user.id}')">Change Password</button>
-                        <button onclick="deleteUser('${user.id}')">Delete</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
+		async function fetchUsers() {
+			try {
+				const response = await fetch(`${apiUrl}/auth/users`, {
+					headers: { 'Authorization': `Bearer ${token}` }
+				});
+				if (!response.ok) throw new Error('Failed to fetch users');
+				const users = await response.json();
+				console.log('Fetched users:', users);
+				displayUsers(users);
+			} catch (error) {
+				console.error('Error fetching users:', error);
+				alert('Error fetching users: ' + error.message);
+			}
+		}
 
-        async function changePassword(userId) {
-            const newPassword = prompt('Enter new password:');
-            if (!newPassword) return;
-            try {
-                const response = await fetch(`${apiUrl}/auth/users/${userId}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ password: newPassword })
-                });
-                if (!response.ok) throw new Error('Failed to change password');
-                const data = await response.json();
-                alert(data.message);
-                await fetchUsers();
-            } catch (error) {
-                console.error('Error changing password:', error);
-                alert('Error changing password: ' + error.message);
-            }
-        }
+		function displayUsers(users) {
+			const tbody = document.querySelector('#users-table tbody');
+			tbody.innerHTML = '';
+			users.forEach(user => {
+				const tr = document.createElement('tr');
+				tr.innerHTML = `
+					<td data-label="Username">${user.username}</td>
+					<td data-label="Actions">
+						<button onclick="changePassword('${user.id}')">Change Password</button>
+						<button onclick="deleteUser('${user.id}')">Delete</button>
+					</td>
+				`;
+				tbody.appendChild(tr);
+			});
+		}
 
-        async function deleteUser(userId) {
-            if (!confirm('Are you sure you want to delete this user?')) return;
-            try {
-                const response = await fetch(`${apiUrl}/auth/users/${userId}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (!response.ok) throw new Error('Failed to delete user');
-                const data = await response.json();
-                alert(data.message);
-                await fetchUsers();
-            } catch (error) {
-                console.error('Error deleting user:', error);
-                alert('Error deleting user: ' + error.message);
-            }
-        }
+		async function changePassword(userId) {
+			const newPassword = prompt('Enter new password:');
+			if (!newPassword) return;
+			try {
+				const response = await fetch(`${apiUrl}/auth/users/${userId}`, {
+					method: 'PATCH',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${token}`
+					},
+					body: JSON.stringify({ password: newPassword })
+				});
+				if (!response.ok) throw new Error('Failed to change password');
+				const data = await response.json();
+				alert(data.message);
+				await fetchUsers();
+			} catch (error) {
+				console.error('Error changing password:', error);
+				alert('Error changing password: ' + error.message);
+			}
+		}
 
-        function escapeCSV(str) {
-            if (str == null) return '';
-            str = str.toString();
-            if (str.includes('"') || str.includes(',') || str.includes('\n')) {
-                return '"' + str.replace(/"/g, '""') + '"';
-            }
-            return str;
-        }
+		async function deleteUser(userId) {
+			if (!confirm('Are you sure you want to delete this user?')) return;
+			try {
+				const response = await fetch(`${apiUrl}/auth/users/${userId}`, {
+					method: 'DELETE',
+					headers: { 'Authorization': `Bearer ${token}` }
+				});
+				if (!response.ok) throw new Error('Failed to delete user');
+				const data = await response.json();
+				alert(data.message);
+				await fetchUsers();
+			} catch (error) {
+				console.error('Error deleting user:', error);
+				alert('Error deleting user: ' + error.message);
+			}
+		}
 
-        function formatDateForExport(dateString) {
-            if (!dateString) return '';
-            const [year, month, day] = dateString.split('-');
-            return `${day}-${month}-${year}`;
-        }
+		function escapeCSV(str) {
+			if (str == null) return '';
+			str = str.toString();
+			if (str.includes('"') || str.includes(',') || str.includes('\n')) {
+				return '"' + str.replace(/"/g, '""') + '"';
+			}
+			return str;
+		}
 
-        function formatDateForDisplay(dateString) {
-            if (!dateString) return '';
-            const [year, month, day] = dateString.split('-');
-            return `${day}-${month}-${year}`;
-        }
+		function formatDateForExport(dateString) {
+			if (!dateString) return '';
+			const [year, month, day] = dateString.split('-');
+			return `${day}-${month}-${year}`;
+		}
 
-        function formatDateForImport(dateString) {
-            if (!dateString) return '';
-            const [day, month, year] = dateString.split('-');
-            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-        }
+		function formatDateForDisplay(dateString) {
+			if (!dateString) return '';
+			const [year, month, day] = dateString.split('-');
+			return `${day}-${month}-${year}`;
+		}
 
-        function exportToCsv() {
-            const headers = ["Name", "Start", "End", "Progress", "Faculty", "TA", "Comments"];
-            const csvContent = [
-                headers.join(','),
-                ...tasks.map(task => 
-                    headers.map(header => {
-                        const key = header.toLowerCase();
-                        if (key === 'start' || key === 'end') {
-                            return escapeCSV(formatDateForExport(task[key]));
-                        }
-                        return escapeCSV(task[key]);
-                    }).join(',')
-                )
-            ].join('\n');
-            
-            const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.setAttribute("href", url);
-            link.setAttribute("download", "tasks.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+		function formatDateForImport(dateString) {
+			if (!dateString) return '';
+			const [day, month, year] = dateString.split('-');
+			return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+		}
 
-        function parseCSVLine(line) {
-            const result = [];
-            let cell = '';
-            let inQuotes = false;
-            
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                if (inQuotes) {
-                    if (char === '"') {
-                        if (i + 1 < line.length && line[i + 1] === '"') {
-                            cell += '"';
-                            i++;
-                        } else {
-                            inQuotes = false;
-                        }
-                    } else {
-                        cell += char;
-                    }
-                } else {
-                    if (char === '"') {
-                        inQuotes = true;
-                    } else if (char === ',') {
-                        result.push(cell.trim());
-                        cell = '';
-                    } else {
-                        cell += char;
-                    }
-                }
-            }
-            result.push(cell.trim());
-            return result;
-        }
+		function exportToCsv() {
+			const headers = ["Name", "Start", "End", "Progress", "Faculty", "TA", "Comments"];
+			const csvContent = [
+				headers.join(','),
+				...tasks.map(task => 
+					headers.map(header => {
+						const key = header.toLowerCase();
+						if (key === 'start' || key === 'end') {
+							return escapeCSV(formatDateForExport(task[key]));
+						}
+						return escapeCSV(task[key]);
+					}).join(',')
+				)
+			].join('\n');
+			
+			const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+			const url = URL.createObjectURL(blob);
+			const link = document.createElement("a");
+			link.setAttribute("href", url);
+			link.setAttribute("download", "tasks.csv");
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+		}
 
-        document.getElementById('csvFile').addEventListener('change', async (event) => {
-            const file = event.target.files[0];
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const csv = e.target.result;
-                const lines = csv.split(/\r\n|\n/);
-                const headers = parseCSVLine(lines[0]);
-                const tasks = [];
+		function parseCSVLine(line) {
+			const result = [];
+			let cell = '';
+			let inQuotes = false;
+			
+			for (let i = 0; i < line.length; i++) {
+				const char = line[i];
+				if (inQuotes) {
+					if (char === '"') {
+						if (i + 1 < line.length && line[i + 1] === '"') {
+							cell += '"';
+							i++;
+						} else {
+							inQuotes = false;
+						}
+					} else {
+						cell += char;
+					}
+				} else {
+					if (char === '"') {
+						inQuotes = true;
+					} else if (char === ',') {
+						result.push(cell.trim());
+						cell = '';
+					} else {
+						cell += char;
+					}
+				}
+			}
+			result.push(cell.trim());
+			return result;
+		}
 
-                for (let i = 1; i < lines.length; i++) {
-                    if (lines[i].trim() === '') continue;
-                    const values = parseCSVLine(lines[i]);
-                    if (values.length !== headers.length) {
-                        console.error(`Skipping line ${i + 1}: incorrect number of fields`);
-                        continue;
-                    }
-                    const task = {};
-                    headers.forEach((header, index) => {
-                        const key = header.toLowerCase().trim();
-                        if (key === 'start' || key === 'end') {
-                            task[key] = formatDateForImport(values[index]);
-                        } else {
-                            task[key] = values[index];
-                        }
-                    });
-                    tasks.push(task);
-                }
+		document.getElementById('csvFile').addEventListener('change', async (event) => {
+			const file = event.target.files[0];
+			const reader = new FileReader();
+			reader.onload = async (e) => {
+				const csv = e.target.result;
+				const lines = csv.split(/\r\n|\n/);
+				const headers = parseCSVLine(lines[0]);
+				const tasks = [];
 
-                try {
-                    const response = await fetch(`${apiUrl}/tasks/import`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify(tasks)
-                    });
-                    if (!response.ok) throw new Error('Failed to import tasks');
-                    alert('Tasks imported successfully');
-                    await fetchTasks();
-                } catch (error) {
-                    console.error('Error importing tasks:', error);
-                    alert('Error importing tasks: ' + error.message);
-                }
-            };
-            reader.readAsText(file, 'UTF-8');
-        });
-    </script>
+				for (let i = 1; i < lines.length; i++) {
+					if (lines[i].trim() === '') continue;
+					const values = parseCSVLine(lines[i]);
+					if (values.length !== headers.length) {
+						console.error(`Skipping line ${i + 1}: incorrect number of fields`);
+						continue;
+					}
+					const task = {};
+					headers.forEach((header, index) => {
+						const key = header.toLowerCase().trim();
+						if (key === 'start' || key === 'end') {
+							task[key] = formatDateForImport(values[index]);
+						} else {
+							task[key] = values[index];
+						}
+					});
+					tasks.push(task);
+				}
+
+				try {
+					const response = await fetch(`${apiUrl}/tasks/import`, {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+							'Authorization': `Bearer ${token}`
+						},
+						body: JSON.stringify(tasks)
+					});
+					if (!response.ok) throw new Error('Failed to import tasks');
+					alert('Tasks imported successfully');
+					await fetchTasks();
+				} catch (error) {
+					console.error('Error importing tasks:', error);
+					alert('Error importing tasks: ' + error.message);
+				}
+			};
+			reader.readAsText(file, 'UTF-8');
+		});
+	</script>
 </body>
 </html>
