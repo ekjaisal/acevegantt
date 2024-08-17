@@ -56,7 +56,7 @@
         }
         
         button:hover {
-            background-color: #2a1c3e;
+            background-color: #1B7541;
         }
         
         #logoutButton {
@@ -95,6 +95,7 @@
             display: block;
             max-width: 100%;
             height: auto;
+            border: 1px solid #e0e0e0;
         }
         
         .tooltip {
@@ -226,10 +227,23 @@
 			const svgNS = "http://www.w3.org/2000/svg";
 			const chart = document.createElementNS(svgNS, "svg");
 			chart.setAttribute("width", "100%");
-			chart.setAttribute("height", tasks.length * 50 + 70);
-			chart.setAttribute("viewBox", `0 0 1150 ${tasks.length * 50 + 70}`);
+			
+			// Calculate total height based on task names
+			let totalHeight = 70; // Initial height for timeline
+			tasks.forEach(task => {
+				const words = task.name.split(' ');
+				const lines = Math.ceil(words.join(' ').length / 20);
+				totalHeight += Math.max(50, lines * 20 + 10); // Minimum 50px height, or more based on lines
+			});
+			
+			chart.setAttribute("height", totalHeight);
+			chart.setAttribute("viewBox", `0 0 1150 ${totalHeight}`);
 
 			chartContainer.appendChild(chart);
+
+            // Add grid
+            const grid = document.createElementNS(svgNS, "g");
+            chart.appendChild(grid);
 
 			const timeline = document.createElementNS(svgNS, "line");
 			timeline.setAttribute("x1", "200");
@@ -247,6 +261,17 @@
 					months.push(new Date(d));
 				}
 				years.add(d.getFullYear());
+                
+                // Add day-wise vertical gridlines
+                const dayX = 200 + ((d - chartStart) / chartDuration) * 950;
+                const dayLine = document.createElementNS(svgNS, "line");
+                dayLine.setAttribute("x1", dayX);
+                dayLine.setAttribute("y1", "45");
+                dayLine.setAttribute("x2", dayX);
+                dayLine.setAttribute("y2", totalHeight);
+                dayLine.setAttribute("stroke", "#f8f8f8");
+                dayLine.setAttribute("stroke-width", "1");
+                grid.appendChild(dayLine);
 			}
 			
 			const lastMonth = new Date(chartEnd);
@@ -275,6 +300,16 @@
 				yearText.setAttribute("text-anchor", "middle");
 				yearText.textContent = year;
 				chart.appendChild(yearText);
+
+                // Add vertical grid line for year
+                const yearLine = document.createElementNS(svgNS, "line");
+                yearLine.setAttribute("x1", startX);
+                yearLine.setAttribute("y1", "45");
+                yearLine.setAttribute("x2", startX);
+                yearLine.setAttribute("y2", totalHeight);
+                yearLine.setAttribute("stroke", "#e0e0e0");
+                yearLine.setAttribute("stroke-width", "1");
+                grid.appendChild(yearLine);
 			});
 
 			months.forEach((date, index) => {
@@ -298,8 +333,19 @@
 				line.setAttribute("stroke", "#333");
 				line.setAttribute("stroke-width", "1");
 				chart.appendChild(line);
+
+                // Add vertical grid line for month
+                const monthLine = document.createElementNS(svgNS, "line");
+                monthLine.setAttribute("x1", x);
+                monthLine.setAttribute("y1", "45");
+                monthLine.setAttribute("x2", x);
+                monthLine.setAttribute("y2", totalHeight);
+                monthLine.setAttribute("stroke", "#f0f0f0");
+                monthLine.setAttribute("stroke-width", "1");
+                grid.appendChild(monthLine);
 			});
 
+			let currentY = 60;
 			tasks.forEach((task, index) => {
 				const taskStart = (new Date(task.start) - chartStart) / chartDuration;
 				const taskDuration = (new Date(task.end) - new Date(task.start)) / chartDuration;
@@ -309,7 +355,7 @@
 
 				const rect = document.createElementNS(svgNS, "rect");
 				rect.setAttribute("x", 200 + (taskStart * 950));
-				rect.setAttribute("y", 60 + (index * 50));
+				rect.setAttribute("y", currentY);
 				rect.setAttribute("width", taskDuration * 950);
 				rect.setAttribute("height", "30");
 				rect.setAttribute("fill", "#66023C");
@@ -320,10 +366,10 @@
 				if (task.progress > 0) {
 					const progress = document.createElementNS(svgNS, "rect");
 					progress.setAttribute("x", 200 + (taskStart * 950));
-					progress.setAttribute("y", 60 + (index * 50));
+					progress.setAttribute("y", currentY);
 					progress.setAttribute("width", (taskDuration * 950) * (task.progress / 100));
 					progress.setAttribute("height", "30");
-					progress.setAttribute("fill", "#228B22");
+					progress.setAttribute("fill", "#1B7541");
 					progress.setAttribute("rx", "5");
 					progress.setAttribute("ry", "5");
 					group.appendChild(progress);
@@ -331,7 +377,7 @@
 
 				const text = document.createElementNS(svgNS, "text");
 				text.setAttribute("x", "10");
-				text.setAttribute("y", 75 + (index * 50));
+				text.setAttribute("y", currentY + 15);
 				text.setAttribute("font-size", "14");
 				text.setAttribute("width", "180");
 				
@@ -363,7 +409,33 @@
 
 				group.addEventListener('mouseover', (e) => showTooltip(e, task));
 				group.addEventListener('mouseout', hideTooltip);
+
+				// Update currentY for the next task
+				currentY += Math.max(50, (lineCount + 1) * 20 + 10);
 			});
+
+            // Add horizontal grid lines
+            for (let y = 60; y < totalHeight; y += 25) { // Changed from 50 to 25 for more frequent lines
+                const horizontalLine = document.createElementNS(svgNS, "line");
+                horizontalLine.setAttribute("x1", "200");
+                horizontalLine.setAttribute("y1", y.toString());
+                horizontalLine.setAttribute("x2", "1150");
+                horizontalLine.setAttribute("y2", y.toString());
+                horizontalLine.setAttribute("stroke", "#f0f0f0");
+                horizontalLine.setAttribute("stroke-width", "1");
+                grid.appendChild(horizontalLine);
+            }
+
+            // Add border to the chart area
+            const border = document.createElementNS(svgNS, "rect");
+            border.setAttribute("x", "0");
+            border.setAttribute("y", "0");
+            border.setAttribute("width", "1150");
+            border.setAttribute("height", totalHeight.toString());
+            border.setAttribute("fill", "none");
+            border.setAttribute("stroke", "#e0e0e0");
+            border.setAttribute("stroke-width", "1");
+            chart.appendChild(border);
 		}
         
         function showTooltip(event, task) {
@@ -378,9 +450,27 @@
                 Progress: ${task.progress}%<br>
                 Comments: ${task.comments}
             `;
-            tooltip.style.left = (event.pageX + 10) + 'px';
-            tooltip.style.top = (event.pageY + 10) + 'px';
+            
             document.body.appendChild(tooltip);
+            
+            const tooltipRect = tooltip.getBoundingClientRect();
+            const chartRect = document.getElementById('gantt-chart').getBoundingClientRect();
+            
+            let left = event.pageX + 10;
+            let top = event.pageY + 10;
+            
+            // Adjust position if tooltip goes off the right edge
+            if (left + tooltipRect.width > window.innerWidth) {
+                left = event.pageX - tooltipRect.width - 10;
+            }
+            
+            // Adjust position if tooltip goes off the bottom edge
+            if (top + tooltipRect.height > window.innerHeight) {
+                top = event.pageY - tooltipRect.height - 10;
+            }
+            
+            tooltip.style.left = `${left}px`;
+            tooltip.style.top = `${top}px`;
         }
         
         function hideTooltip() {
