@@ -221,221 +221,220 @@
             }
         }
         
-        function drawGantt(tasks) {
-            const chartContainer = document.getElementById("gantt-chart");
-            chartContainer.innerHTML = '';
+		function drawGantt(tasks) {
+			const chartContainer = document.getElementById("gantt-chart");
+			chartContainer.innerHTML = '';
 
-            const chartStart = new Date(Math.min(...tasks.map(t => new Date(t.start))));
-            let chartEnd = new Date(Math.max(...tasks.map(t => new Date(t.end))));
-            chartStart.setDate(1);
-            chartEnd.setMonth(chartEnd.getMonth() + 1, 0);
-            const chartDuration = chartEnd - chartStart;
+			const chartStart = new Date(Math.min(...tasks.map(t => new Date(t.start))));
+			let chartEnd = new Date(Math.max(...tasks.map(t => new Date(t.end))));
+			chartStart.setDate(1);
+			const chartDuration = chartEnd - chartStart;
 
-            const svgNS = "http://www.w3.org/2000/svg";
-            const chart = document.createElementNS(svgNS, "svg");
-            chart.setAttribute("width", "100%");
-            
-            let totalHeight = 70;
-            tasks.forEach(task => {
-                const words = task.name.split(' ');
-                const lines = Math.ceil(words.join(' ').length / 20);
-                totalHeight += Math.max(50, lines * 20 + 10);
-            });
-            
-            chart.setAttribute("height", totalHeight);
-            chart.setAttribute("viewBox", `0 0 1150 ${totalHeight}`);
+			const svgNS = "http://www.w3.org/2000/svg";
+			const chart = document.createElementNS(svgNS, "svg");
+			chart.setAttribute("width", "100%");
+			
+			let totalHeight = 70;
+			tasks.forEach(task => {
+				const words = task.name.split(' ');
+				const lines = Math.ceil(words.join(' ').length / 20);
+				totalHeight += Math.max(50, lines * 20 + 10);
+			});
+			
+			chart.setAttribute("height", totalHeight);
+			chart.setAttribute("viewBox", `0 0 1150 ${totalHeight}`);
 
-            chartContainer.appendChild(chart);
+			chartContainer.appendChild(chart);
 
-            const grid = document.createElementNS(svgNS, "g");
-            chart.appendChild(grid);
+			const grid = document.createElementNS(svgNS, "g");
+			chart.appendChild(grid);
 
-            const timeline = document.createElementNS(svgNS, "line");
-            timeline.setAttribute("x1", "200");
-            timeline.setAttribute("y1", "45");
-            timeline.setAttribute("x2", "1150");
-            timeline.setAttribute("y2", "45");
-            timeline.setAttribute("stroke", "#333");
-            timeline.setAttribute("stroke-width", "2");
-            chart.appendChild(timeline);
+			const timeline = document.createElementNS(svgNS, "line");
+			timeline.setAttribute("x1", "200");
+			timeline.setAttribute("y1", "45");
+			timeline.setAttribute("x2", "1150");
+			timeline.setAttribute("y2", "45");
+			timeline.setAttribute("stroke", "#333");
+			timeline.setAttribute("stroke-width", "2");
+			chart.appendChild(timeline);
 
-            const months = [];
-            const years = new Set();
-            for (let d = new Date(chartStart); d <= chartEnd; d.setDate(d.getDate() + 1)) {
-                if (d.getDate() === 1 || d.getTime() === chartStart.getTime()) {
-                    months.push(new Date(d));
-                }
-                years.add(d.getFullYear());
-                
-                const dayX = 200 + ((d - chartStart) / chartDuration) * 950;
-                const dayLine = document.createElementNS(svgNS, "line");
-                dayLine.setAttribute("x1", dayX);
-                dayLine.setAttribute("y1", "45");
-                dayLine.setAttribute("x2", dayX);
-                dayLine.setAttribute("y2", totalHeight);
-                dayLine.setAttribute("stroke", "#f8f8f8");
-                dayLine.setAttribute("stroke-width", "1");
-                grid.appendChild(dayLine);
-            }
-            
-            const lastMonth = new Date(chartEnd);
-            lastMonth.setMonth(lastMonth.getMonth() + 1, 1);
-            months.push(lastMonth);
-            
-            Array.from(years).forEach((year, index) => {
-                const yearStart = new Date(year, 0, 1);
-                const yearEnd = new Date(year, 11, 31);
-                const startX = Math.max(200, 200 + ((yearStart - chartStart) / chartDuration) * 950);
-                const endX = Math.min(1150, 200 + ((yearEnd - chartStart) / chartDuration) * 950);
-                const width = endX - startX;
+			const months = [];
+			const years = new Set();
+			for (let d = new Date(chartStart); d <= chartEnd; d.setDate(d.getDate() + 1)) {
+				if (d.getDate() === 1 || d.getTime() === chartStart.getTime()) {
+					months.push(new Date(d));
+				}
+				years.add(d.getFullYear());
+				
+				const dayX = 200 + ((d - chartStart) / chartDuration) * 950;
+				const dayLine = document.createElementNS(svgNS, "line");
+				dayLine.setAttribute("x1", dayX);
+				dayLine.setAttribute("y1", "45");
+				dayLine.setAttribute("x2", dayX);
+				dayLine.setAttribute("y2", totalHeight);
+				dayLine.setAttribute("stroke", "#f8f8f8");
+				dayLine.setAttribute("stroke-width", "1");
+				grid.appendChild(dayLine);
+			}
+			
+			Array.from(years).forEach((year, index) => {
+				const yearStart = new Date(year, 0, 1);
+				const yearEnd = new Date(year, 11, 31);
+				const startX = Math.max(200, 200 + ((yearStart - chartStart) / chartDuration) * 950);
+				const endX = Math.min(1150, 200 + ((yearEnd - chartStart) / chartDuration) * 950);
+				const width = endX - startX;
 
-                const yearRect = document.createElementNS(svgNS, "rect");
-                yearRect.setAttribute("x", startX);
-                yearRect.setAttribute("y", "10");
-                yearRect.setAttribute("width", width);
-                yearRect.setAttribute("height", "20");
-                yearRect.setAttribute("fill", index % 2 === 0 ? "#f0f0f0" : "#e0e0e0");
-                chart.appendChild(yearRect);
+				const yearRect = document.createElementNS(svgNS, "rect");
+				yearRect.setAttribute("x", startX);
+				yearRect.setAttribute("y", "10");
+				yearRect.setAttribute("width", width);
+				yearRect.setAttribute("height", "20");
+				yearRect.setAttribute("fill", index % 2 === 0 ? "#f0f0f0" : "#e0e0e0");
+				chart.appendChild(yearRect);
 
-                const yearText = document.createElementNS(svgNS, "text");
-                yearText.setAttribute("x", startX + width / 2);
-                yearText.setAttribute("y", "25");
-                yearText.setAttribute("font-size", "12");
-                yearText.setAttribute("text-anchor", "middle");
-                yearText.textContent = year;
-                chart.appendChild(yearText);
+				const yearText = document.createElementNS(svgNS, "text");
+				yearText.setAttribute("x", startX + width / 2);
+				yearText.setAttribute("y", "25");
+				yearText.setAttribute("font-size", "12");
+				yearText.setAttribute("text-anchor", "middle");
+				yearText.textContent = year;
+				chart.appendChild(yearText);
 
-                const yearLine = document.createElementNS(svgNS, "line");
-                yearLine.setAttribute("x1", startX);
-                yearLine.setAttribute("y1", "45");
-                yearLine.setAttribute("x2", startX);
-                yearLine.setAttribute("y2", totalHeight);
-                yearLine.setAttribute("stroke", "#e0e0e0");
-                yearLine.setAttribute("stroke-width", "1");
-                grid.appendChild(yearLine);
-            });
+				const yearLine = document.createElementNS(svgNS, "line");
+				yearLine.setAttribute("x1", startX);
+				yearLine.setAttribute("y1", "45");
+				yearLine.setAttribute("x2", startX);
+				yearLine.setAttribute("y2", totalHeight);
+				yearLine.setAttribute("stroke", "#e0e0e0");
+				yearLine.setAttribute("stroke-width", "1");
+				grid.appendChild(yearLine);
+			});
 
-            months.forEach((date, index) => {
-                let x = 200 + ((date - chartStart) / chartDuration) * 950;
-                if (index === months.length - 1) {
-                    x = Math.min(x, 1130);
-                }
-                const text = document.createElementNS(svgNS, "text");
-                text.setAttribute("x", x);
-                text.setAttribute("y", "40");
-                text.setAttribute("font-size", "10");
-                text.setAttribute("text-anchor", "middle");
-                text.textContent = date.toLocaleString('default', { month: 'short' }).slice(0, 3);
-                chart.appendChild(text);
+			months.forEach((date, index) => {
+				if (date <= chartEnd) {
+					let x = 200 + ((date - chartStart) / chartDuration) * 950;
+					x = Math.min(x, 1150);
 
-                const line = document.createElementNS(svgNS, "line");
-                line.setAttribute("x1", x);
-                line.setAttribute("y1", "45");
-                line.setAttribute("x2", x);
-                line.setAttribute("y2", "50");
-                line.setAttribute("stroke", "#333");
-                line.setAttribute("stroke-width", "1");
-                chart.appendChild(line);
+					const text = document.createElementNS(svgNS, "text");
+					text.setAttribute("x", x);
+					text.setAttribute("y", "40");
+					text.setAttribute("font-size", "10");
+					text.setAttribute("text-anchor", "middle");
+					text.textContent = date.toLocaleString('default', { month: 'short' }).slice(0, 3);
+					chart.appendChild(text);
 
-                const monthLine = document.createElementNS(svgNS, "line");
-                monthLine.setAttribute("x1", x);
-                monthLine.setAttribute("y1", "45");
-                monthLine.setAttribute("x2", x);
-                monthLine.setAttribute("y2", totalHeight);
-                monthLine.setAttribute("stroke", "#f0f0f0");
-                monthLine.setAttribute("stroke-width", "1");
-                grid.appendChild(monthLine);
-            });
+					const line = document.createElementNS(svgNS, "line");
+					line.setAttribute("x1", x);
+					line.setAttribute("y1", "45");
+					line.setAttribute("x2", x);
+					line.setAttribute("y2", "50");
+					line.setAttribute("stroke", "#333");
+					line.setAttribute("stroke-width", "1");
+					chart.appendChild(line);
 
-            let currentY = 60;
-            tasks.forEach((task, index) => {
-                const taskStart = (new Date(task.start) - chartStart) / chartDuration;
-                const taskDuration = (new Date(task.end) - new Date(task.start)) / chartDuration;
+					const monthLine = document.createElementNS(svgNS, "line");
+					monthLine.setAttribute("x1", x);
+					monthLine.setAttribute("y1", "45");
+					monthLine.setAttribute("x2", x);
+					monthLine.setAttribute("y2", totalHeight);
+					monthLine.setAttribute("stroke", "#f0f0f0");
+					monthLine.setAttribute("stroke-width", "1");
+					grid.appendChild(monthLine);
+				}
+			});
 
-                const group = document.createElementNS(svgNS, "g");
-                chart.appendChild(group);
+			let currentY = 60;
+			tasks.forEach((task, index) => {
+				const taskStart = new Date(task.start);
+				const taskEnd = new Date(task.end);
+				const taskStartPosition = (taskStart - chartStart) / chartDuration;
+				const taskEndPosition = (taskEnd - chartStart) / chartDuration;
+				const taskWidth = taskEndPosition - taskStartPosition;
 
-                const rect = document.createElementNS(svgNS, "rect");
-                rect.setAttribute("x", 200 + (taskStart * 950));
-                rect.setAttribute("y", currentY);
-                rect.setAttribute("width", taskDuration * 950);
-                rect.setAttribute("height", "30");
-                rect.setAttribute("fill", "#66023C");
-                rect.setAttribute("rx", "5");
-                rect.setAttribute("ry", "5");
-                group.appendChild(rect);
+				const group = document.createElementNS(svgNS, "g");
+				chart.appendChild(group);
 
-                if (task.progress > 0) {
-                    const progress = document.createElementNS(svgNS, "rect");
-                    progress.setAttribute("x", 200 + (taskStart * 950));
-                    progress.setAttribute("y", currentY);
-                    progress.setAttribute("width", (taskDuration * 950) * (task.progress / 100));
-                    progress.setAttribute("height", "30");
-                    progress.setAttribute("fill", "#1B7541");
-                    progress.setAttribute("rx", "5");
-                    progress.setAttribute("ry", "5");
-                    group.appendChild(progress);
-                }
+				const rect = document.createElementNS(svgNS, "rect");
+				rect.setAttribute("x", 200 + (taskStartPosition * 950));
+				rect.setAttribute("y", currentY);
+				rect.setAttribute("width", taskWidth * 950);
+				rect.setAttribute("height", "30");
+				rect.setAttribute("fill", "#66023C");
+				rect.setAttribute("rx", "5");
+				rect.setAttribute("ry", "5");
+				group.appendChild(rect);
 
-                const text = document.createElementNS(svgNS, "text");
-                text.setAttribute("x", "10");
-                text.setAttribute("y", currentY + 15);
-                text.setAttribute("font-size", "14");
-                text.setAttribute("width", "180");
-                
-                const words = task.name.split(' ');
-                let line = '';
-                let lineCount = 0;
-                words.forEach(word => {
-                    if ((line + word).length > 20 && line !== '') {
-                        const tspan = document.createElementNS(svgNS, "tspan");
-                        tspan.setAttribute("x", "10");
-                        tspan.setAttribute("dy", lineCount === 0 ? "0" : "1.2em");
-                        tspan.textContent = line;
-                        text.appendChild(tspan);
-                        line = word;
-                        lineCount++;
-                    } else {
-                        line += (line === '' ? '' : ' ') + word;
-                    }
-                });
-                if (line !== '') {
-                    const tspan = document.createElementNS(svgNS, "tspan");
-                    tspan.setAttribute("x", "10");
-                    tspan.setAttribute("dy", lineCount === 0 ? "0" : "1.2em");
-                    tspan.textContent = line;
-                    text.appendChild(tspan);
-                }
+				if (task.progress > 0) {
+					const progress = document.createElementNS(svgNS, "rect");
+					progress.setAttribute("x", 200 + (taskStartPosition * 950));
+					progress.setAttribute("y", currentY);
+					progress.setAttribute("width", (taskWidth * 950) * (task.progress / 100));
+					progress.setAttribute("height", "30");
+					progress.setAttribute("fill", "#1B7541");
+					progress.setAttribute("rx", "5");
+					progress.setAttribute("ry", "5");
+					group.appendChild(progress);
+				}
 
-                chart.appendChild(text);
+				const text = document.createElementNS(svgNS, "text");
+				text.setAttribute("x", "10");
+				text.setAttribute("y", currentY + 15);
+				text.setAttribute("font-size", "14");
+				text.setAttribute("width", "180");
+				
+				const words = task.name.split(' ');
+				let line = '';
+				let lineCount = 0;
+				words.forEach(word => {
+					if ((line + word).length > 20 && line !== '') {
+						const tspan = document.createElementNS(svgNS, "tspan");
+						tspan.setAttribute("x", "10");
+						tspan.setAttribute("dy", lineCount === 0 ? "0" : "1.2em");
+						tspan.textContent = line;
+						text.appendChild(tspan);
+						line = word;
+						lineCount++;
+					} else {
+						line += (line === '' ? '' : ' ') + word;
+					}
+				});
+				if (line !== '') {
+					const tspan = document.createElementNS(svgNS, "tspan");
+					tspan.setAttribute("x", "10");
+					tspan.setAttribute("dy", lineCount === 0 ? "0" : "1.2em");
+					tspan.textContent = line;
+					text.appendChild(tspan);
+				}
 
-                group.addEventListener('mouseover', (e) => showTooltip(e, task));
-                group.addEventListener('mouseout', hideTooltip);
+				chart.appendChild(text);
 
-                currentY += Math.max(50, (lineCount + 1) * 20 + 10);
-            });
+				group.addEventListener('mouseover', (e) => showTooltip(e, task));
+				group.addEventListener('mouseout', hideTooltip);
 
-            for (let y = 60; y < totalHeight; y += 25) {
-                const horizontalLine = document.createElementNS(svgNS, "line");
-                horizontalLine.setAttribute("x1", "200");
-                horizontalLine.setAttribute("y1", y.toString());
-                horizontalLine.setAttribute("x2", "1150");
-                horizontalLine.setAttribute("y2", y.toString());
-                horizontalLine.setAttribute("stroke", "#f0f0f0");
-                horizontalLine.setAttribute("stroke-width", "1");
-                grid.appendChild(horizontalLine);
-            }
+				currentY += Math.max(50, (lineCount + 1) * 20 + 10);
+			});
 
-            const border = document.createElementNS(svgNS, "rect");
-            border.setAttribute("x", "0");
-            border.setAttribute("y", "0");
-            border.setAttribute("width", "1150");
-            border.setAttribute("height", totalHeight.toString());
-            border.setAttribute("fill", "none");
-            border.setAttribute("stroke", "#e0e0e0");
-            border.setAttribute("stroke-width", "1");
-            chart.appendChild(border);
-        }
+			for (let y = 60; y < totalHeight; y += 25) {
+				const horizontalLine = document.createElementNS(svgNS, "line");
+				horizontalLine.setAttribute("x1", "200");
+				horizontalLine.setAttribute("y1", y.toString());
+				horizontalLine.setAttribute("x2", "1150");
+				horizontalLine.setAttribute("y2", y.toString());
+				horizontalLine.setAttribute("stroke", "#f0f0f0");
+				horizontalLine.setAttribute("stroke-width", "1");
+				grid.appendChild(horizontalLine);
+			}
+
+			const border = document.createElementNS(svgNS, "rect");
+			border.setAttribute("x", "0");
+			border.setAttribute("y", "0");
+			border.setAttribute("width", "1150");
+			border.setAttribute("height", totalHeight.toString());
+			border.setAttribute("fill", "none");
+			border.setAttribute("stroke", "#e0e0e0");
+			border.setAttribute("stroke-width", "1");
+			chart.appendChild(border);
+		}
         
         function showTooltip(event, task) {
             const tooltip = document.createElement('div');
