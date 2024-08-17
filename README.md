@@ -100,8 +100,10 @@ This project uses the following open-source libraries:
 - [Firebase Admin SDK](https://firebase.google.com/docs/admin/setup) for database and authentication,
 - [bcrypt.js](https://github.com/dcodeIO/bcrypt.js) for password hashing,
 - [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) for JWT authentication,
-- [dotenv](https://github.com/motdotla/dotenv) for environment variable management, and
-- [CORS](https://github.com/expressjs/cors) for Cross-Origin Resource Sharing.
+- [dotenv](https://github.com/motdotla/dotenv) for environment variable management,
+- [CORS](https://github.com/expressjs/cors) for Cross-Origin Resource Sharing,
+- [SortableJS](https://github.com/SortableJS/Sortable) for tasks list management, and
+- [Roboto Font](https://fonts.google.com/specimen/Roboto) for UI typography.
 
 ## License 📄
 

@@ -232,6 +232,10 @@
             </thead>
             <tbody></tbody>
         </table>
+		<br>
+        <button onclick="exportToCsv()">Export to CSV</button>
+        <input type="file" id="csvFile" accept=".csv" style="display: none;">
+        <button onclick="document.getElementById('csvFile').click()">Import from CSV</button>
 
         <h2>Add User</h2>
         <input type="text" id="new-username" placeholder="Username">
@@ -339,8 +343,8 @@
                 tr.innerHTML = `
                     <td class="handle-container"><div class="handle draggable"><span class="drag-icon">☰</span></div></td>
                     <td data-label="Name">${task.name}</td>
-                    <td data-label="Start">${new Date(task.start).toLocaleDateString()}</td>
-                    <td data-label="End">${new Date(task.end).toLocaleDateString()}</td>
+                    <td data-label="Start">${formatDateForDisplay(task.start)}</td>
+                    <td data-label="End">${formatDateForDisplay(task.end)}</td>
                     <td data-label="Progress">${task.progress}%</td>
                     <td data-label="Faculty">${task.faculty}</td>
                     <td data-label="TA">${task.ta}</td>
@@ -397,47 +401,60 @@
             }
         }
 
-        async function saveTask() {
-            const taskId = document.getElementById('task-id').value;
-            const task = {
-                name: document.getElementById('task-name').value,
-                start: document.getElementById('task-start').value,
-                end: document.getElementById('task-end').value,
-                progress: parseInt(document.getElementById('task-progress').value),
-                faculty: document.getElementById('task-faculty').value,
-                ta: document.getElementById('task-ta').value,
-                comments: document.getElementById('task-comments').value
-            };
-            try {
-                const url = taskId ? `${apiUrl}/tasks/${taskId}` : `${apiUrl}/tasks`;
-                const method = taskId ? 'PATCH' : 'POST';
-                const response = await fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(task)
-                });
-                if (!response.ok) throw new Error('Failed to save task');
-                const savedTask = await response.json();
-                console.log('Task saved:', savedTask);
-                await fetchTasks();
-                clearTaskForm();
-                alert('Task saved successfully');
-            } catch (error) {
-                console.error('Error saving task:', error);
-                alert('Error saving task: ' + error.message);
-            }
-        }
+		async function saveTask() {
+			const taskId = document.getElementById('task-id').value;
+			const name = document.getElementById('task-name').value.trim();
+			const start = document.getElementById('task-start').value;
+			const end = document.getElementById('task-end').value;
+			
+			if (!name || !start || !end) {
+				alert('Task name, start date, and end date are required.');
+				return;
+			}
+
+			const task = {
+				name,
+				start,
+				end,
+				progress: parseInt(document.getElementById('task-progress').value) || 0,
+				faculty: document.getElementById('task-faculty').value.trim(),
+				ta: document.getElementById('task-ta').value.trim(),
+				comments: document.getElementById('task-comments').value.trim()
+			};
+
+			try {
+				const url = taskId ? `${apiUrl}/tasks/${taskId}` : `${apiUrl}/tasks`;
+				const method = taskId ? 'PATCH' : 'POST';
+				const response = await fetch(url, {
+					method: method,
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${token}`
+					},
+					body: JSON.stringify(task)
+				});
+				if (!response.ok) {
+					const errorData = await response.json();
+					throw new Error(errorData.error || 'Failed to save task');
+				}
+				const savedTask = await response.json();
+				console.log('Task saved:', savedTask);
+				await fetchTasks();
+				clearTaskForm();
+				alert('Task saved successfully');
+			} catch (error) {
+				console.error('Error saving task:', error);
+				alert('Error saving task: ' + error.message);
+			}
+		}
 
         function editTask(taskId) {
             const task = tasks.find(t => t.id === taskId);
             if (task) {
                 document.getElementById('task-id').value = task.id;
                 document.getElementById('task-name').value = task.name;
-                document.getElementById('task-start').value = new Date(task.start).toISOString().split('T')[0];
-                document.getElementById('task-end').value = new Date(task.end).toISOString().split('T')[0];
+                document.getElementById('task-start').value = task.start;
+                document.getElementById('task-end').value = task.end;
                 document.getElementById('task-progress').value = task.progress;
                 document.getElementById('task-faculty').value = task.faculty;
                 document.getElementById('task-ta').value = task.ta;
@@ -462,7 +479,18 @@
                 alert('Error deleting task: ' + error.message);
             }
         }
-        
+
+        function clearTaskForm() {
+            document.getElementById('task-id').value = '';
+            document.getElementById('task-name').value = '';
+            document.getElementById('task-start').value = '';
+            document.getElementById('task-end').value = '';
+            document.getElementById('task-progress').value = '';
+            document.getElementById('task-faculty').value = '';
+            document.getElementById('task-ta').value = '';
+            document.getElementById('task-comments').value = '';
+        }
+
         async function addUser() {
             const username = document.getElementById('new-username').value;
             const password = document.getElementById('new-password').value;
@@ -556,16 +584,138 @@
             }
         }
 
-        function clearTaskForm() {
-            document.getElementById('task-id').value = '';
-            document.getElementById('task-name').value = '';
-            document.getElementById('task-start').value = '';
-            document.getElementById('task-end').value = '';
-            document.getElementById('task-progress').value = '';
-            document.getElementById('task-faculty').value = '';
-            document.getElementById('task-ta').value = '';
-            document.getElementById('task-comments').value = '';
+        function escapeCSV(str) {
+            if (str == null) return '';
+            str = str.toString();
+            if (str.includes('"') || str.includes(',') || str.includes('\n')) {
+                return '"' + str.replace(/"/g, '""') + '"';
+            }
+            return str;
         }
+
+        function formatDateForExport(dateString) {
+            if (!dateString) return '';
+            const [year, month, day] = dateString.split('-');
+            return `${day}-${month}-${year}`;
+        }
+
+        function formatDateForDisplay(dateString) {
+            if (!dateString) return '';
+            const [year, month, day] = dateString.split('-');
+            return `${day}-${month}-${year}`;
+        }
+
+        function formatDateForImport(dateString) {
+            if (!dateString) return '';
+            const [day, month, year] = dateString.split('-');
+            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        }
+
+        function exportToCsv() {
+            const headers = ["Name", "Start", "End", "Progress", "Faculty", "TA", "Comments"];
+            const csvContent = [
+                headers.join(','),
+                ...tasks.map(task => 
+                    headers.map(header => {
+                        const key = header.toLowerCase();
+                        if (key === 'start' || key === 'end') {
+                            return escapeCSV(formatDateForExport(task[key]));
+                        }
+                        return escapeCSV(task[key]);
+                    }).join(',')
+                )
+            ].join('\n');
+            
+            const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", "tasks.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function parseCSVLine(line) {
+            const result = [];
+            let cell = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (inQuotes) {
+                    if (char === '"') {
+                        if (i + 1 < line.length && line[i + 1] === '"') {
+                            cell += '"';
+                            i++;
+                        } else {
+                            inQuotes = false;
+                        }
+                    } else {
+                        cell += char;
+                    }
+                } else {
+                    if (char === '"') {
+                        inQuotes = true;
+                    } else if (char === ',') {
+                        result.push(cell.trim());
+                        cell = '';
+                    } else {
+                        cell += char;
+                    }
+                }
+            }
+            result.push(cell.trim());
+            return result;
+        }
+
+        document.getElementById('csvFile').addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const csv = e.target.result;
+                const lines = csv.split(/\r\n|\n/);
+                const headers = parseCSVLine(lines[0]);
+                const tasks = [];
+
+                for (let i = 1; i < lines.length; i++) {
+                    if (lines[i].trim() === '') continue;
+                    const values = parseCSVLine(lines[i]);
+                    if (values.length !== headers.length) {
+                        console.error(`Skipping line ${i + 1}: incorrect number of fields`);
+                        continue;
+                    }
+                    const task = {};
+                    headers.forEach((header, index) => {
+                        const key = header.toLowerCase().trim();
+                        if (key === 'start' || key === 'end') {
+                            task[key] = formatDateForImport(values[index]);
+                        } else {
+                            task[key] = values[index];
+                        }
+                    });
+                    tasks.push(task);
+                }
+
+                try {
+                    const response = await fetch(`${apiUrl}/tasks/import`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(tasks)
+                    });
+                    if (!response.ok) throw new Error('Failed to import tasks');
+                    alert('Tasks imported successfully');
+                    await fetchTasks();
+                } catch (error) {
+                    console.error('Error importing tasks:', error);
+                    alert('Error importing tasks: ' + error.message);
+                }
+            };
+            reader.readAsText(file, 'UTF-8');
+        });
     </script>
 </body>
 </html>
