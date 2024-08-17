@@ -245,21 +245,22 @@
         <button onclick="clearTaskForm()">Clear</button>
 
         <h2>Tasks</h2>
-        <table id="tasks-table">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>Name</th>
-                    <th>Start</th>
-                    <th>End</th>
-                    <th>Progress</th>
-                    <th>Faculty</th>
-                    <th>TA</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+			<table id="tasks-table">
+				<thead>
+					<tr>
+						<th></th>
+						<th>Name</th>
+						<th>Start</th>
+						<th>End</th>
+						<th>Progress</th>
+						<th>Faculty</th>
+						<th>TA</th>
+						<th>Comments</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody></tbody>
+			</table>
         <br>
         <button onclick="exportToCsv()">Export to CSV</button>
         <input type="file" id="csvFile" accept=".csv" style="display: none;">
@@ -362,27 +363,28 @@
             }
         }
         
-        function displayTasks() {
-            const tbody = document.querySelector('#tasks-table tbody');
-            tbody.innerHTML = '';
-            tasks.forEach((task, index) => {
-                const tr = document.createElement('tr');
-                tr.setAttribute('data-id', task.id);
-                tr.innerHTML = `
-                    <td class="handle-container"><div class="handle draggable"><span class="drag-icon">☰</span></div></td>
-                    <td data-label="Name">${task.name}</td>
-                    <td data-label="Start">${formatDateForDisplay(task.start)}</td>
-                    <td data-label="End">${formatDateForDisplay(task.end)}</td>
-                    <td data-label="Progress">${task.progress}%</td>
-                    <td data-label="Faculty">${task.faculty}</td>
-                    <td data-label="TA">${task.ta}</td>
-                    <td data-label="Actions">
-                        <button class="edit-btn" data-id="${task.id}">Edit</button>
-                        <button onclick="deleteTask('${task.id}')">Delete</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
+		function displayTasks() {
+			const tbody = document.querySelector('#tasks-table tbody');
+			tbody.innerHTML = '';
+			tasks.forEach((task, index) => {
+				const tr = document.createElement('tr');
+				tr.setAttribute('data-id', task.id);
+				tr.innerHTML = `
+					<td class="handle-container"><div class="handle draggable"><span class="drag-icon">☰</span></div></td>
+					<td data-label="Name">${task.name}</td>
+					<td data-label="Start">${formatDateForDisplay(task.start)}</td>
+					<td data-label="End">${formatDateForDisplay(task.end)}</td>
+					<td data-label="Progress">${task.progress}%</td>
+					<td data-label="Faculty">${task.faculty}</td>
+					<td data-label="TA">${task.ta}</td>
+					<td data-label="Comments">${task.comments}</td>
+					<td data-label="Actions">
+						<button class="edit-btn" data-id="${task.id}">Edit</button>
+						<button onclick="deleteTask('${task.id}')">Delete</button>
+					</td>
+				`;
+				tbody.appendChild(tr);
+			});
 
             document.querySelectorAll('.edit-btn').forEach(btn => {
                 ['click', 'touchstart'].forEach(eventType => {
