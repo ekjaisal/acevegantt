@@ -73,11 +73,29 @@
             background-color: #66023C;
             color: #fff;
         }
-        .draggable {
+        .handle-container {
+            width: 40px;
+            min-width: 40px;
+            padding: 0 !important;
+        }
+        .handle {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
             cursor: move;
+        }
+        .drag-icon {
+            font-size: 1.5em;
+            padding: 5px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
         }
         .dragging {
             opacity: 0.5;
+        }
+        td[data-label="Actions"] {
+            white-space: nowrap;
         }
         
         #branding {
@@ -137,13 +155,44 @@
                 content: attr(data-label);
                 font-weight: bold;
             }
+
+            .handle-container {
+                width: auto;
+                min-width: auto;
+            }
+            
+            .handle {
+                justify-content: flex-start;
+                padding-left: 10px;
+            }
+
+            td[data-label="Actions"] {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+                padding-left: 8px;
+            }
+
+            td[data-label="Actions"]::before {
+                position: static;
+                content: attr(data-label);
+                font-weight: bold;
+                text-transform: uppercase;
+                width: 100%;
+                margin-bottom: 5px;
+            }
+
+            td[data-label="Actions"] button {
+                flex: 1;
+                min-width: 80px;
+            }
         }
     </style>
 </head>
 <body>
-	<div id="branding">
-		<h3>acevegantt.</h3>
-	</div>
+    <div id="branding">
+        <h3>acevegantt.</h3>
+    </div>
     <div id="login-form">
         <h2>Admin Login</h2>
         <input type="text" id="username" placeholder="Username">
@@ -154,7 +203,7 @@
     <div id="admin-panel" style="display: none;">
         <h1>Admin Panel</h1>
         <button id="logoutButton" onclick="logout()">Logout</button>
-		<button onclick="viewUserInterface()">View Chart</button>
+        <button onclick="viewUserInterface()">View Chart</button>
         <h2>Add/Edit Task</h2>
         <input type="hidden" id="task-id">
         <input type="text" id="task-name" placeholder="Task Name">
@@ -165,11 +214,13 @@
         <input type="text" id="task-ta" placeholder="Teaching Assistant">
         <input type="text" id="task-comments" placeholder="Comments">
         <button onclick="saveTask()">Save Task</button>
+        <button onclick="clearTaskForm()">Clear</button>
 
         <h2>Tasks</h2>
         <table id="tasks-table">
             <thead>
                 <tr>
+                    <th></th>
                     <th>Name</th>
                     <th>Start</th>
                     <th>End</th>
@@ -228,57 +279,57 @@
             }
         }
 
-		async function login() {
-			const username = document.getElementById('username').value;
-			const password = document.getElementById('password').value;
-			try {
-				const response = await fetch(`${apiUrl}/auth/login`, {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ username, password })
-				});
-				if (!response.ok) throw new Error('Login failed');
-				const data = await response.json();
-				if (!data.adminToken) {
-					throw new Error('Access denied. Admin privileges required.');
-				}
-				token = data.adminToken;
-				localStorage.setItem('adminToken', token);
-				checkAdminToken();
-			} catch (error) {
-				console.error('Login error:', error);
-				alert('Login failed: ' + error.message);
-			}
-		}
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            try {
+                const response = await fetch(`${apiUrl}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                if (!response.ok) throw new Error('Login failed');
+                const data = await response.json();
+                if (!data.adminToken) {
+                    throw new Error('Access denied. Admin privileges required.');
+                }
+                token = data.adminToken;
+                localStorage.setItem('adminToken', token);
+                checkAdminToken();
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Login failed: ' + error.message);
+            }
+        }
 
-		function logout() {
-			localStorage.removeItem('adminToken');
-			token = null;
-			checkAdminToken();
-		}
+        function logout() {
+            localStorage.removeItem('adminToken');
+            token = null;
+            checkAdminToken();
+        }
 
-		function viewUserInterface() {
-			window.open('/', '_blank');
-		}
+        function viewUserInterface() {
+            window.open('/', '_blank');
+        }
 
-		async function fetchTasks() {
-			try {
-				const response = await fetch(`${apiUrl}/tasks`, {
-					headers: { 'Authorization': `Bearer ${token}` }
-				});
-				if (!response.ok) {
-					const errorData = await response.json();
-					throw new Error(errorData.error || 'Failed to fetch tasks');
-				}
-				tasks = await response.json();
-				console.log('Tasks fetched:', tasks);
-				displayTasks();
-			} catch (error) {
-				console.error('Error fetching tasks:', error);
-				alert('Error fetching tasks: ' + error.message);
-			}
-		}
-		
+        async function fetchTasks() {
+            try {
+                const response = await fetch(`${apiUrl}/tasks`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to fetch tasks');
+                }
+                tasks = await response.json();
+                console.log('Tasks fetched:', tasks);
+                displayTasks();
+            } catch (error) {
+                console.error('Error fetching tasks:', error);
+                alert('Error fetching tasks: ' + error.message);
+            }
+        }
+        
         function displayTasks() {
             const tbody = document.querySelector('#tasks-table tbody');
             tbody.innerHTML = '';
@@ -286,6 +337,7 @@
                 const tr = document.createElement('tr');
                 tr.setAttribute('data-id', task.id);
                 tr.innerHTML = `
+                    <td class="handle-container"><div class="handle draggable"><span class="drag-icon">☰</span></div></td>
                     <td data-label="Name">${task.name}</td>
                     <td data-label="Start">${new Date(task.start).toLocaleDateString()}</td>
                     <td data-label="End">${new Date(task.end).toLocaleDateString()}</td>
@@ -293,16 +345,27 @@
                     <td data-label="Faculty">${task.faculty}</td>
                     <td data-label="TA">${task.ta}</td>
                     <td data-label="Actions">
-                        <button onclick="editTask('${task.id}')">Edit</button>
+                        <button class="edit-btn" data-id="${task.id}">Edit</button>
                         <button onclick="deleteTask('${task.id}')">Delete</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
 
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                ['click', 'touchstart'].forEach(eventType => {
+                    btn.addEventListener(eventType, (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        editTask(btn.getAttribute('data-id'));
+                    }, { passive: false });
+                });
+            });
+
             new Sortable(tbody, {
                 animation: 150,
                 ghostClass: 'dragging',
+                handle: '.handle',
                 onEnd: function(evt) {
                     const newOrder = Array.from(tbody.children).map((tr, index) => ({
                         id: tr.getAttribute('data-id'),
@@ -313,91 +376,93 @@
             });
         }
 
-		async function updateTaskOrder(newOrder) {
-			try {
-				const response = await fetch(`${apiUrl}/tasks/reorder`, {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						'Authorization': `Bearer ${token}`
-					},
-					body: JSON.stringify(newOrder)
-				});
-				if (!response.ok) {
-					const errorData = await response.json();
-					throw new Error(errorData.error || 'Failed to update task order');
-				}
-				await fetchTasks(); // Refresh the task list
-			} catch (error) {
-				console.error('Error updating task order:', error);
-				alert('Error updating task order: ' + error.message);
-			}
-		}
+        async function updateTaskOrder(newOrder) {
+            try {
+                const response = await fetch(`${apiUrl}/tasks/reorder`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(newOrder)
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to update task order');
+                }
+                await fetchTasks();
+            } catch (error) {
+                console.error('Error updating task order:', error);
+                alert('Error updating task order: ' + error.message);
+            }
+        }
 
-		async function saveTask() {
-			const taskId = document.getElementById('task-id').value;
-			const task = {
-				name: document.getElementById('task-name').value,
-				start: document.getElementById('task-start').value,
-				end: document.getElementById('task-end').value,
-				progress: parseInt(document.getElementById('task-progress').value),
-				faculty: document.getElementById('task-faculty').value,
-				ta: document.getElementById('task-ta').value,
-				comments: document.getElementById('task-comments').value
-			};
-			try {
-				const url = taskId ? `${apiUrl}/tasks/${taskId}` : `${apiUrl}/tasks`;
-				const method = taskId ? 'PATCH' : 'POST';
-				const response = await fetch(url, {
-					method: method,
-					headers: {
-						'Content-Type': 'application/json',
-						'Authorization': `Bearer ${token}`
-					},
-					body: JSON.stringify(task)
-				});
-				if (!response.ok) throw new Error('Failed to save task');
-				const savedTask = await response.json();
-				console.log('Task saved:', savedTask);
-				await fetchTasks();
-				clearTaskForm();
-				alert('Task saved successfully');
-			} catch (error) {
-				console.error('Error saving task:', error);
-				alert('Error saving task: ' + error.message);
-			}
-		}
+        async function saveTask() {
+            const taskId = document.getElementById('task-id').value;
+            const task = {
+                name: document.getElementById('task-name').value,
+                start: document.getElementById('task-start').value,
+                end: document.getElementById('task-end').value,
+                progress: parseInt(document.getElementById('task-progress').value),
+                faculty: document.getElementById('task-faculty').value,
+                ta: document.getElementById('task-ta').value,
+                comments: document.getElementById('task-comments').value
+            };
+            try {
+                const url = taskId ? `${apiUrl}/tasks/${taskId}` : `${apiUrl}/tasks`;
+                const method = taskId ? 'PATCH' : 'POST';
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(task)
+                });
+                if (!response.ok) throw new Error('Failed to save task');
+                const savedTask = await response.json();
+                console.log('Task saved:', savedTask);
+                await fetchTasks();
+                clearTaskForm();
+                alert('Task saved successfully');
+            } catch (error) {
+                console.error('Error saving task:', error);
+                alert('Error saving task: ' + error.message);
+            }
+        }
 
-		function editTask(taskId) {
-			const task = tasks.find(t => t.id === taskId);
-			if (task) {
-				document.getElementById('task-id').value = task.id;
-				document.getElementById('task-name').value = task.name;
-				document.getElementById('task-start').value = new Date(task.start).toISOString().split('T')[0];
-				document.getElementById('task-end').value = new Date(task.end).toISOString().split('T')[0];
-				document.getElementById('task-progress').value = task.progress;
-				document.getElementById('task-faculty').value = task.faculty;
-				document.getElementById('task-ta').value = task.ta;
-				document.getElementById('task-comments').value = task.comments;
-			}
-		}
+        function editTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                document.getElementById('task-id').value = task.id;
+                document.getElementById('task-name').value = task.name;
+                document.getElementById('task-start').value = new Date(task.start).toISOString().split('T')[0];
+                document.getElementById('task-end').value = new Date(task.end).toISOString().split('T')[0];
+                document.getElementById('task-progress').value = task.progress;
+                document.getElementById('task-faculty').value = task.faculty;
+                document.getElementById('task-ta').value = task.ta;
+                document.getElementById('task-comments').value = task.comments;
+                
+                document.getElementById('task-name').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
 
-		async function deleteTask(taskId) {
-			if (!confirm('Are you sure you want to delete this task?')) return;
-			try {
-				const response = await fetch(`${apiUrl}/tasks/${taskId}`, {
-					method: 'DELETE',
-					headers: { 'Authorization': `Bearer ${token}` }
-				});
-				if (!response.ok) throw new Error('Failed to delete task');
-				await fetchTasks();
-				alert('Task deleted successfully');
-			} catch (error) {
-				console.error('Error deleting task:', error);
-				alert('Error deleting task: ' + error.message);
-			}
-		}
-		
+        async function deleteTask(taskId) {
+            if (!confirm('Are you sure you want to delete this task?')) return;
+            try {
+                const response = await fetch(`${apiUrl}/tasks/${taskId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('Failed to delete task');
+                await fetchTasks();
+                alert('Task deleted successfully');
+            } catch (error) {
+                console.error('Error deleting task:', error);
+                alert('Error deleting task: ' + error.message);
+            }
+        }
+        
         async function addUser() {
             const username = document.getElementById('new-username').value;
             const password = document.getElementById('new-password').value;
@@ -421,20 +486,20 @@
             }
         }
 
-		async function fetchUsers() {
-			try {
-				const response = await fetch(`${apiUrl}/auth/users`, {
-					headers: { 'Authorization': `Bearer ${token}` }
-				});
-				if (!response.ok) throw new Error('Failed to fetch users');
-				const users = await response.json();
-				console.log('Fetched users:', users);
-				displayUsers(users);
-			} catch (error) {
-				console.error('Error fetching users:', error);
-				alert('Error fetching users: ' + error.message);
-			}
-		}
+        async function fetchUsers() {
+            try {
+                const response = await fetch(`${apiUrl}/auth/users`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('Failed to fetch users');
+                const users = await response.json();
+                console.log('Fetched users:', users);
+                displayUsers(users);
+            } catch (error) {
+                console.error('Error fetching users:', error);
+                alert('Error fetching users: ' + error.message);
+            }
+        }
 
         function displayUsers(users) {
             const tbody = document.querySelector('#users-table tbody');
@@ -452,44 +517,44 @@
             });
         }
 
-		async function changePassword(userId) {
-			const newPassword = prompt('Enter new password:');
-			if (!newPassword) return;
-			try {
-				const response = await fetch(`${apiUrl}/auth/users/${userId}`, {
-					method: 'PATCH',
-					headers: {
-						'Content-Type': 'application/json',
-						'Authorization': `Bearer ${token}`
-					},
-					body: JSON.stringify({ password: newPassword })
-				});
-				if (!response.ok) throw new Error('Failed to change password');
-				const data = await response.json();
-				alert(data.message);
-				await fetchUsers();
-			} catch (error) {
-				console.error('Error changing password:', error);
-				alert('Error changing password: ' + error.message);
-			}
-		}
+        async function changePassword(userId) {
+            const newPassword = prompt('Enter new password:');
+            if (!newPassword) return;
+            try {
+                const response = await fetch(`${apiUrl}/auth/users/${userId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ password: newPassword })
+                });
+                if (!response.ok) throw new Error('Failed to change password');
+                const data = await response.json();
+                alert(data.message);
+                await fetchUsers();
+            } catch (error) {
+                console.error('Error changing password:', error);
+                alert('Error changing password: ' + error.message);
+            }
+        }
 
-		async function deleteUser(userId) {
-			if (!confirm('Are you sure you want to delete this user?')) return;
-			try {
-				const response = await fetch(`${apiUrl}/auth/users/${userId}`, {
-					method: 'DELETE',
-					headers: { 'Authorization': `Bearer ${token}` }
-				});
-				if (!response.ok) throw new Error('Failed to delete user');
-				const data = await response.json();
-				alert(data.message);
-				await fetchUsers();
-			} catch (error) {
-				console.error('Error deleting user:', error);
-				alert('Error deleting user: ' + error.message);
-			}
-		}
+        async function deleteUser(userId) {
+            if (!confirm('Are you sure you want to delete this user?')) return;
+            try {
+                const response = await fetch(`${apiUrl}/auth/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('Failed to delete user');
+                const data = await response.json();
+                alert(data.message);
+                await fetchUsers();
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                alert('Error deleting user: ' + error.message);
+            }
+        }
 
         function clearTaskForm() {
             document.getElementById('task-id').value = '';
