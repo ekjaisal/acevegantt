@@ -22,14 +22,13 @@
         
         #login-form {
             text-align: center;
-            margin-top: 50px;
+            margin: 50px auto;
             padding: 20px;
             background-color: #ffffff;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             max-width: 300px;
-            margin-left: auto;
-            margin-right: auto;
+            width: 90%;
         }
         
         #login-form input {
@@ -43,7 +42,7 @@
         }
         
         button {
-            background-color: #3d295a;
+            background-color: #66023C;
             color: #ffffff;
             border: none;
             padding: 10px 20px;
@@ -53,17 +52,19 @@
             font-family: 'Roboto', Arial, sans-serif;
             font-size: 16px;
             font-weight: bold;
+            width: 100%;
         }
         
         button:hover {
             background-color: #2a1c3e;
         }
-		
-		#logoutButton {
-			position: absolute;
-			top: 20px;
-			right: 20px;
-		}
+        
+        #logoutButton {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: auto;
+        }
         
         #chart-container {
             max-width: 1200px;
@@ -74,7 +75,7 @@
         
         h1 {
             text-align: center;
-            color: #3d295a;
+            color: #66023C;
             margin-bottom: 30px;
             font-size: 1.75em;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
@@ -105,6 +106,24 @@
             font-size: 14px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             z-index: 1000;
+            max-width: 250px;
+        }
+        
+        #branding {
+            position: fixed;
+            bottom: 0.75em;
+            left: 0.75em;
+            background-color: #66023C;
+            padding: 0.5em;
+            border-radius: 5px;
+        }
+
+        #branding h3 {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            font-weight: bold;
+            color: #f5f3ef;
+            font-size: 0.75em;
         }
         
         @media (max-width: 768px) {
@@ -119,24 +138,13 @@
             #gantt-chart {
                 padding: 10px;
             }
+            
+            #logoutButton {
+                position: static;
+                margin-bottom: 20px;
+                width: 100%;
+            }
         }
-		
-		#branding {
-			position: fixed;
-			bottom: 0.75em;
-			left: 0.75em;
-			background-color: #3D295A;
-			padding: 0.5em 0.5em;
-			border-radius: 5px;
-		}
-
-		#branding h3 {
-			margin: 0;
-			font-family: 'Roboto', sans-serif;
-			font-weight: bold;
-			color: #f5f3ef;
-			font-size: 0.75em;
-		}
     </style>
 </head>
 <body>
@@ -150,166 +158,213 @@
     </div>
     <div id="chart-container" style="display: none;">
 		<button id="logoutButton" onclick="logout()">Logout</button>
-        <h1>Event Name</h1>
+        <h1>Event Placeholder</h1>
         <div id="gantt-chart"></div>
     </div>
     <script>
         let token = '';
         
-        async function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            
-            try {
-                const response = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ username, password }),
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Login failed');
-                }
-                
-                const data = await response.json();
-                token = data.token;
-                localStorage.setItem('token', token);
-                
-                document.getElementById('login-form').style.display = 'none';
-                document.getElementById('chart-container').style.display = 'block';
-                fetchTasks();
-            } catch (error) {
-                alert('Login failed. Please try again.');
-            }
-        }
+		async function login() {
+			const username = document.getElementById('username').value;
+			const password = document.getElementById('password').value;
+			
+			try {
+				const response = await fetch('/api/auth/login', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({ username, password }),
+				});
+				
+				if (!response.ok) {
+					throw new Error('Login failed');
+				}
+				
+				const data = await response.json();
+				token = data.userToken;
+				localStorage.setItem('userToken', token);
+				
+				document.getElementById('login-form').style.display = 'none';
+				document.getElementById('chart-container').style.display = 'block';
+				fetchTasks();
+			} catch (error) {
+				alert('Login failed. Please try again.');
+			}
+		}
         
-        async function fetchTasks() {
-            try {
-				const storedToken = localStorage.getItem('token');
+		async function fetchTasks() {
+			try {
+				const userToken = localStorage.getItem('userToken');
 				const response = await fetch('/api/tasks', {
 					headers: {
-						'Authorization': `Bearer ${storedToken}`,
+						'Authorization': `Bearer ${userToken}`,
 					},
 				});
-                
-                if (!response.ok) {
-                    throw new Error('Failed to fetch tasks');
-                }
-                
-                const tasks = await response.json();
-                drawGantt(tasks);
-            } catch (error) {
-                alert('Failed to fetch tasks. Please try again.');
-            }
-        }
+				
+				if (!response.ok) {
+					throw new Error('Failed to fetch tasks');
+				}
+				
+				const tasks = await response.json();
+				drawGantt(tasks);
+			} catch (error) {
+				alert('Failed to fetch tasks. Please try again.');
+			}
+		}
         
-        function drawGantt(tasks) {
-            const chartContainer = document.getElementById("gantt-chart");
-            chartContainer.innerHTML = '';
+		function drawGantt(tasks) {
+			const chartContainer = document.getElementById("gantt-chart");
+			chartContainer.innerHTML = '';
 
-            const chartStart = new Date(Math.min(...tasks.map(t => new Date(t.start))));
-            const chartEnd = new Date(Math.max(...tasks.map(t => new Date(t.end))));
-            const chartDuration = chartEnd - chartStart;
-        
-            const svgNS = "http://www.w3.org/2000/svg";
-            const chart = document.createElementNS(svgNS, "svg");
-            chart.setAttribute("width", "100%");
-            chart.setAttribute("height", tasks.length * 50 + 70);
-            chart.setAttribute("viewBox", `0 0 1000 ${tasks.length * 50 + 70}`);
-            chartContainer.appendChild(chart);
-        
-            const timeline = document.createElementNS(svgNS, "line");
-            timeline.setAttribute("x1", "200");
-            timeline.setAttribute("y1", "45");
-            timeline.setAttribute("x2", "1000");
-            timeline.setAttribute("y2", "45");
-            timeline.setAttribute("stroke", "#333");
-            timeline.setAttribute("stroke-width", "2");
-            chart.appendChild(timeline);
-        
-            const months = [];
-            const years = new Set();
-            for (let d = new Date(chartStart); d <= chartEnd; d.setMonth(d.getMonth() + 1)) {
-                months.push(new Date(d));
-                years.add(d.getFullYear());
-            }
-            
-            Array.from(years).forEach((year, index) => {
-                const yearStart = new Date(year, 0, 1);
-                const yearEnd = new Date(year, 11, 31);
-                const startX = Math.max(200, 200 + ((yearStart - chartStart) / chartDuration) * 800);
-                const endX = Math.min(1000, 200 + ((yearEnd - chartStart) / chartDuration) * 800);
-                const width = endX - startX;
-        
-                const yearRect = document.createElementNS(svgNS, "rect");
-                yearRect.setAttribute("x", startX);
-                yearRect.setAttribute("y", "10");
-                yearRect.setAttribute("width", width);
-                yearRect.setAttribute("height", "20");
-                yearRect.setAttribute("fill", index % 2 === 0 ? "#f0f0f0" : "#e0e0e0");
-                chart.appendChild(yearRect);
-        
-                const yearText = document.createElementNS(svgNS, "text");
-                yearText.setAttribute("x", startX + width / 2);
-                yearText.setAttribute("y", "25");
-                yearText.setAttribute("font-size", "12");
-                yearText.setAttribute("text-anchor", "middle");
-                yearText.textContent = year;
-                chart.appendChild(yearText);
-            });
-        
-            months.forEach((date, index) => {
-                const text = document.createElementNS(svgNS, "text");
-                text.setAttribute("x", 200 + (index * 800 / (months.length - 1)));
-                text.setAttribute("y", "40");
-                text.setAttribute("font-size", "10");
-                text.setAttribute("text-anchor", "middle");
-                text.textContent = date.toLocaleString('default', { month: 'short' });
-                chart.appendChild(text);
-            });
-        
-            tasks.forEach((task, index) => {
-                const taskStart = (new Date(task.start) - chartStart) / chartDuration;
-                const taskDuration = (new Date(task.end) - new Date(task.start)) / chartDuration;
-        
-                const group = document.createElementNS(svgNS, "g");
-                chart.appendChild(group);
-        
-                const rect = document.createElementNS(svgNS, "rect");
-                rect.setAttribute("x", 200 + (taskStart * 800));
-                rect.setAttribute("y", 60 + (index * 50));
-                rect.setAttribute("width", taskDuration * 800);
-                rect.setAttribute("height", "30");
-                rect.setAttribute("fill", "#3D295A");
-                rect.setAttribute("rx", "5");
-                rect.setAttribute("ry", "5");
-                group.appendChild(rect);
-        
-                if (task.progress > 0) {
-                    const progress = document.createElementNS(svgNS, "rect");
-                    progress.setAttribute("x", 200 + (taskStart * 800));
-                    progress.setAttribute("y", 60 + (index * 50));
-                    progress.setAttribute("width", (taskDuration * 800) * (task.progress / 100));
-                    progress.setAttribute("height", "30");
-                    progress.setAttribute("fill", "#228B22");
-                    progress.setAttribute("rx", "5");
-                    progress.setAttribute("ry", "5");
-                    group.appendChild(progress);
-                }
-        
-                const text = document.createElementNS(svgNS, "text");
-                text.setAttribute("x", "10");
-                text.setAttribute("y", 80 + (index * 50));
-                text.setAttribute("font-size", "14");
-                text.textContent = task.name;
-                chart.appendChild(text);
-        
-                group.addEventListener('mouseover', (e) => showTooltip(e, task));
-                group.addEventListener('mouseout', hideTooltip);
-            });
-        }
+			const chartStart = new Date(Math.min(...tasks.map(t => new Date(t.start))));
+			let chartEnd = new Date(Math.max(...tasks.map(t => new Date(t.end))));
+			chartStart.setDate(1);
+			chartEnd.setMonth(chartEnd.getMonth() + 1, 0);
+			const chartDuration = chartEnd - chartStart;
+
+			const svgNS = "http://www.w3.org/2000/svg";
+			const chart = document.createElementNS(svgNS, "svg");
+			chart.setAttribute("width", "100%");
+			chart.setAttribute("height", tasks.length * 50 + 70);
+			chart.setAttribute("viewBox", `0 0 1150 ${tasks.length * 50 + 70}`);
+
+			chartContainer.appendChild(chart);
+
+			const timeline = document.createElementNS(svgNS, "line");
+			timeline.setAttribute("x1", "200");
+			timeline.setAttribute("y1", "45");
+			timeline.setAttribute("x2", "1150");
+			timeline.setAttribute("y2", "45");
+			timeline.setAttribute("stroke", "#333");
+			timeline.setAttribute("stroke-width", "2");
+			chart.appendChild(timeline);
+
+			const months = [];
+			const years = new Set();
+			for (let d = new Date(chartStart); d <= chartEnd; d.setDate(d.getDate() + 1)) {
+				if (d.getDate() === 1 || d.getTime() === chartStart.getTime()) {
+					months.push(new Date(d));
+				}
+				years.add(d.getFullYear());
+			}
+			
+			const lastMonth = new Date(chartEnd);
+			lastMonth.setMonth(lastMonth.getMonth() + 1, 1);
+			months.push(lastMonth);
+			
+			Array.from(years).forEach((year, index) => {
+				const yearStart = new Date(year, 0, 1);
+				const yearEnd = new Date(year, 11, 31);
+				const startX = Math.max(200, 200 + ((yearStart - chartStart) / chartDuration) * 950);
+				const endX = Math.min(1150, 200 + ((yearEnd - chartStart) / chartDuration) * 950);
+				const width = endX - startX;
+
+				const yearRect = document.createElementNS(svgNS, "rect");
+				yearRect.setAttribute("x", startX);
+				yearRect.setAttribute("y", "10");
+				yearRect.setAttribute("width", width);
+				yearRect.setAttribute("height", "20");
+				yearRect.setAttribute("fill", index % 2 === 0 ? "#f0f0f0" : "#e0e0e0");
+				chart.appendChild(yearRect);
+
+				const yearText = document.createElementNS(svgNS, "text");
+				yearText.setAttribute("x", startX + width / 2);
+				yearText.setAttribute("y", "25");
+				yearText.setAttribute("font-size", "12");
+				yearText.setAttribute("text-anchor", "middle");
+				yearText.textContent = year;
+				chart.appendChild(yearText);
+			});
+
+			months.forEach((date, index) => {
+				let x = 200 + ((date - chartStart) / chartDuration) * 950;
+				if (index === months.length - 1) {
+					x = Math.min(x, 1130);
+				}
+				const text = document.createElementNS(svgNS, "text");
+				text.setAttribute("x", x);
+				text.setAttribute("y", "40");
+				text.setAttribute("font-size", "10");
+				text.setAttribute("text-anchor", "middle");
+				text.textContent = date.toLocaleString('default', { month: 'short' }).slice(0, 3);
+				chart.appendChild(text);
+
+				const line = document.createElementNS(svgNS, "line");
+				line.setAttribute("x1", x);
+				line.setAttribute("y1", "45");
+				line.setAttribute("x2", x);
+				line.setAttribute("y2", "50");
+				line.setAttribute("stroke", "#333");
+				line.setAttribute("stroke-width", "1");
+				chart.appendChild(line);
+			});
+
+			tasks.forEach((task, index) => {
+				const taskStart = (new Date(task.start) - chartStart) / chartDuration;
+				const taskDuration = (new Date(task.end) - new Date(task.start)) / chartDuration;
+
+				const group = document.createElementNS(svgNS, "g");
+				chart.appendChild(group);
+
+				const rect = document.createElementNS(svgNS, "rect");
+				rect.setAttribute("x", 200 + (taskStart * 950));
+				rect.setAttribute("y", 60 + (index * 50));
+				rect.setAttribute("width", taskDuration * 950);
+				rect.setAttribute("height", "30");
+				rect.setAttribute("fill", "#66023C");
+				rect.setAttribute("rx", "5");
+				rect.setAttribute("ry", "5");
+				group.appendChild(rect);
+
+				if (task.progress > 0) {
+					const progress = document.createElementNS(svgNS, "rect");
+					progress.setAttribute("x", 200 + (taskStart * 950));
+					progress.setAttribute("y", 60 + (index * 50));
+					progress.setAttribute("width", (taskDuration * 950) * (task.progress / 100));
+					progress.setAttribute("height", "30");
+					progress.setAttribute("fill", "#228B22");
+					progress.setAttribute("rx", "5");
+					progress.setAttribute("ry", "5");
+					group.appendChild(progress);
+				}
+
+				const text = document.createElementNS(svgNS, "text");
+				text.setAttribute("x", "10");
+				text.setAttribute("y", 75 + (index * 50));
+				text.setAttribute("font-size", "14");
+				text.setAttribute("width", "180");
+				
+				const words = task.name.split(' ');
+				let line = '';
+				let lineCount = 0;
+				words.forEach(word => {
+					if ((line + word).length > 20 && line !== '') {
+						const tspan = document.createElementNS(svgNS, "tspan");
+						tspan.setAttribute("x", "10");
+						tspan.setAttribute("dy", lineCount === 0 ? "0" : "1.2em");
+						tspan.textContent = line;
+						text.appendChild(tspan);
+						line = word;
+						lineCount++;
+					} else {
+						line += (line === '' ? '' : ' ') + word;
+					}
+				});
+				if (line !== '') {
+					const tspan = document.createElementNS(svgNS, "tspan");
+					tspan.setAttribute("x", "10");
+					tspan.setAttribute("dy", lineCount === 0 ? "0" : "1.2em");
+					tspan.textContent = line;
+					text.appendChild(tspan);
+				}
+
+				chart.appendChild(text);
+
+				group.addEventListener('mouseover', (e) => showTooltip(e, task));
+				group.addEventListener('mouseout', hideTooltip);
+			});
+		}
         
         function showTooltip(event, task) {
             const tooltip = document.createElement('div');
@@ -336,23 +391,18 @@
         }
 		
 		function logout() {
-			localStorage.removeItem('token');
+			localStorage.removeItem('userToken');
 			window.location.href = '/';
 		}
-		
-        document.addEventListener('DOMContentLoaded', function() {
-            const token = localStorage.getItem('token');
-            if (token) {
-                const decodedToken = JSON.parse(atob(token.split('.')[1]));
-                if (decodedToken.role === 'admin') {
-                    window.location.href = '/admin';
-                } else {
-                    document.getElementById('login-form').style.display = 'none';
-                    document.getElementById('chart-container').style.display = 'block';
-                    fetchTasks();
-                }
-            }
-        });
+
+		document.addEventListener('DOMContentLoaded', function() {
+			const userToken = localStorage.getItem('userToken');
+			if (userToken) {
+				document.getElementById('login-form').style.display = 'none';
+				document.getElementById('chart-container').style.display = 'block';
+				fetchTasks();
+			}
+		});
         
         function debounce(func, wait) {
             let timeout;

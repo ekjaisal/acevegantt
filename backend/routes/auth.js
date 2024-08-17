@@ -23,8 +23,9 @@ router.post('/login', async (req, res) => {
     if (!isPasswordMatch) {
       return res.status(400).send({ error: 'Invalid login credentials' });
     }
-    const token = jwt.sign({ id: snapshot.docs[0].id, role: user.role }, process.env.JWT_SECRET);
-    res.send({ token, role: user.role });
+    const userToken = jwt.sign({ id: snapshot.docs[0].id, role: 'user' }, process.env.JWT_SECRET);
+    const adminToken = user.role === 'admin' ? jwt.sign({ id: snapshot.docs[0].id, role: 'admin' }, process.env.JWT_SECRET) : null;
+    res.send({ userToken, adminToken, role: user.role });
   } catch (error) {
     res.status(400).send(error);
   }

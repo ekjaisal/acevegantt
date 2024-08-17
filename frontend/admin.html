@@ -35,9 +35,10 @@
             margin-bottom: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
+            box-sizing: border-box;
         }
         button {
-            background-color: #3D295A;
+            background-color: #66023C;
             color: #fff;
             border: none;
             cursor: pointer;
@@ -45,20 +46,20 @@
         button:hover {
             background-color: #2a1c3e;
         }
-		
-		#admin-panel button {
-			width: auto;
-			display: inline-block;
-			padding: 10px 20px;
-			margin-right: 10px;
-			margin-bottom: 10px;
-		}
+        
+        #admin-panel button {
+            width: auto;
+            display: inline-block;
+            padding: 10px 20px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
 
-		#tasks-table button, #users-table button {
-			padding: 5px 10px;
-			font-size: 0.9em;
-		}
-	
+        #tasks-table button, #users-table button {
+            padding: 5px 10px;
+            font-size: 0.9em;
+        }
+    
         table {
             width: 100%;
             border-collapse: collapse;
@@ -69,7 +70,7 @@
             border-bottom: 1px solid #ddd;
         }
         th {
-            background-color: #3D295A;
+            background-color: #66023C;
             color: #fff;
         }
         .draggable {
@@ -78,23 +79,65 @@
         .dragging {
             opacity: 0.5;
         }
-		
-		#branding {
-			position: fixed;
-			bottom: 0.75em;
-			left: 0.75em;
-			background-color: #3D295A;
-			padding: 0.5em 0.5em;
-			border-radius: 5px;
-		}
+        
+        #branding {
+            position: fixed;
+            bottom: 0.75em;
+            left: 0.75em;
+            background-color: #66023C;
+            padding: 0.5em;
+            border-radius: 5px;
+        }
 
-		#branding h3 {
-			margin: 0;
-			font-family: 'Roboto', sans-serif;
-			font-weight: bold;
-			color: #f5f3ef;
-			font-size: 0.75em;
-		}
+        #branding h3 {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            font-weight: bold;
+            color: #f5f3ef;
+            font-size: 0.75em;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            #admin-panel button {
+                width: 100%;
+                margin-right: 0;
+            }
+            
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            
+            tr {
+                margin-bottom: 10px;
+            }
+            
+            td {
+                border: none;
+                position: relative;
+                padding-left: 50%;
+            }
+            
+            td:before {
+                position: absolute;
+                top: 6px;
+                left: 6px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                content: attr(data-label);
+                font-weight: bold;
+            }
+        }
     </style>
 </head>
 <body>
@@ -111,6 +154,7 @@
     <div id="admin-panel" style="display: none;">
         <h1>Admin Panel</h1>
         <button id="logoutButton" onclick="logout()">Logout</button>
+		<button onclick="viewUserInterface()">View Chart</button>
         <h2>Add/Edit Task</h2>
         <input type="hidden" id="task-id">
         <input type="text" id="task-name" placeholder="Task Name">
@@ -184,33 +228,38 @@
             }
         }
 
-        async function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            try {
-                const response = await fetch(`${apiUrl}/auth/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-                if (!response.ok) throw new Error('Login failed');
-                const data = await response.json();
-                if (data.role !== 'admin') {
-                    throw new Error('Access denied. Admin privileges required.');
-                }
-                token = data.token;
-                localStorage.setItem('adminToken', token);
-                checkAdminToken();
-            } catch (error) {
-                console.error('Login error:', error);
-                alert('Login failed: ' + error.message);
-            }
-        }
-        function logout() {
-            localStorage.removeItem('adminToken');
-            token = null;
-            checkAdminToken();
-        }
+		async function login() {
+			const username = document.getElementById('username').value;
+			const password = document.getElementById('password').value;
+			try {
+				const response = await fetch(`${apiUrl}/auth/login`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ username, password })
+				});
+				if (!response.ok) throw new Error('Login failed');
+				const data = await response.json();
+				if (!data.adminToken) {
+					throw new Error('Access denied. Admin privileges required.');
+				}
+				token = data.adminToken;
+				localStorage.setItem('adminToken', token);
+				checkAdminToken();
+			} catch (error) {
+				console.error('Login error:', error);
+				alert('Login failed: ' + error.message);
+			}
+		}
+
+		function logout() {
+			localStorage.removeItem('adminToken');
+			token = null;
+			checkAdminToken();
+		}
+
+		function viewUserInterface() {
+			window.open('/', '_blank');
+		}
 
 		async function fetchTasks() {
 			try {
@@ -230,40 +279,39 @@
 			}
 		}
 		
-		function displayTasks() {
-			const tbody = document.querySelector('#tasks-table tbody');
-			tbody.innerHTML = '';
-			tasks.forEach((task, index) => {
-				const tr = document.createElement('tr');
-				tr.setAttribute('data-id', task.id);
-				tr.innerHTML = `
-					<td>${task.name}</td>
-					<td>${new Date(task.start).toLocaleDateString()}</td>
-					<td>${new Date(task.end).toLocaleDateString()}</td>
-					<td>${task.progress}%</td>
-					<td>${task.faculty}</td>
-					<td>${task.ta}</td>
-					<td>
-						<button onclick="editTask('${task.id}')">Edit</button>
-						<button onclick="deleteTask('${task.id}')">Delete</button>
-					</td>
-				`;
-				tbody.appendChild(tr);
-			});
+        function displayTasks() {
+            const tbody = document.querySelector('#tasks-table tbody');
+            tbody.innerHTML = '';
+            tasks.forEach((task, index) => {
+                const tr = document.createElement('tr');
+                tr.setAttribute('data-id', task.id);
+                tr.innerHTML = `
+                    <td data-label="Name">${task.name}</td>
+                    <td data-label="Start">${new Date(task.start).toLocaleDateString()}</td>
+                    <td data-label="End">${new Date(task.end).toLocaleDateString()}</td>
+                    <td data-label="Progress">${task.progress}%</td>
+                    <td data-label="Faculty">${task.faculty}</td>
+                    <td data-label="TA">${task.ta}</td>
+                    <td data-label="Actions">
+                        <button onclick="editTask('${task.id}')">Edit</button>
+                        <button onclick="deleteTask('${task.id}')">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
 
-			// Initialize drag-and-drop
-			new Sortable(tbody, {
-				animation: 150,
-				ghostClass: 'dragging',
-				onEnd: function(evt) {
-					const newOrder = Array.from(tbody.children).map((tr, index) => ({
-						id: tr.getAttribute('data-id'),
-						order: index
-					}));
-					updateTaskOrder(newOrder);
-				}
-			});
-		}
+            new Sortable(tbody, {
+                animation: 150,
+                ghostClass: 'dragging',
+                onEnd: function(evt) {
+                    const newOrder = Array.from(tbody.children).map((tr, index) => ({
+                        id: tr.getAttribute('data-id'),
+                        order: index
+                    }));
+                    updateTaskOrder(newOrder);
+                }
+            });
+        }
 
 		async function updateTaskOrder(newOrder) {
 			try {
@@ -388,21 +436,21 @@
 			}
 		}
 
-		function displayUsers(users) {
-			const tbody = document.querySelector('#users-table tbody');
-			tbody.innerHTML = '';
-			users.forEach(user => {
-				const tr = document.createElement('tr');
-				tr.innerHTML = `
-					<td>${user.username}</td>
-					<td>
-						<button onclick="changePassword('${user.id}')">Change Password</button>
-						<button onclick="deleteUser('${user.id}')">Delete</button>
-					</td>
-				`;
-				tbody.appendChild(tr);
-			});
-		}
+        function displayUsers(users) {
+            const tbody = document.querySelector('#users-table tbody');
+            tbody.innerHTML = '';
+            users.forEach(user => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td data-label="Username">${user.username}</td>
+                    <td data-label="Actions">
+                        <button onclick="changePassword('${user.id}')">Change Password</button>
+                        <button onclick="deleteUser('${user.id}')">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
 
 		async function changePassword(userId) {
 			const newPassword = prompt('Enter new password:');

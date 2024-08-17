@@ -16,7 +16,7 @@ const auth = async (req, res, next) => {
       throw new Error();
     }
 
-    req.user = { id: userDoc.id, ...userDoc.data() };
+    req.user = { id: userDoc.id, ...userDoc.data(), role: decoded.role };
     next();
   } catch (error) {
     res.status(401).send({ error: 'Please authenticate.' });
@@ -25,12 +25,19 @@ const auth = async (req, res, next) => {
 
 const adminAuth = async (req, res, next) => {
   try {
-    await auth(req, res, () => {
-      if (req.user.role !== 'admin') {
-        throw new Error('Access denied. Admin privileges required.');
-      }
-      next();
-    });
+    const token = req.header('Authorization').replace('Bearer ', '');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.role !== 'admin') {
+      throw new Error('Access denied. Admin privileges required.');
+    }
+    const userDoc = await db.collection('users').doc(decoded.id).get();
+
+    if (!userDoc.exists) {
+      throw new Error();
+    }
+
+    req.user = { id: userDoc.id, ...userDoc.data(), role: 'admin' };
+    next();
   } catch (error) {
     res.status(403).send({ error: error.message });
   }
