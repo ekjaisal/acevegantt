@@ -8,24 +8,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap" rel="stylesheet">
+    <title>acevegantt. Admin Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Roboto', Arial, sans-serif;
             line-height: 1.6;
             margin: 0;
             padding: 20px;
-            background-color: #f4f4f4;
+            background-color: #f5f3ef;
+            color: #141414;
         }
         h1, h2 {
-            color: #333;
+            color: #141414;
         }
         #login-form, #admin-panel {
             background-color: #fff;
             padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
         input, button {
@@ -36,12 +37,15 @@
             border: 1px solid #ddd;
             border-radius: 4px;
             box-sizing: border-box;
+            font-size: 16px;
         }
         button {
             background-color: #66023C;
             color: #fff;
             border: none;
             cursor: pointer;
+            font-weight: 400;
+            transition: background-color 0.3s ease;
         }
         button:hover {
             background-color: #1B7541;
@@ -63,10 +67,11 @@
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-bottom: 20px;
         }
         th, td {
             text-align: left;
-            padding: 8px;
+            padding: 12px 8px;
             border-bottom: 1px solid #ddd;
         }
         th {
@@ -98,21 +103,36 @@
             white-space: nowrap;
         }
         
-        #branding {
+        #acevegantt-label {
             position: fixed;
-            bottom: 0.75em;
-            left: 0.75em;
+            bottom: 0;
+            left: 0;
             background-color: #66023C;
-            padding: 0.5em;
-            border-radius: 5px;
+            padding: 3px 6px;
+            z-index: 1000;
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+            width: auto;
+            text-align: center;
         }
 
-        #branding h3 {
+        #acevegantt-label h3 {
             margin: 0;
             font-family: 'Roboto', sans-serif;
             font-weight: bold;
             color: #f5f3ef;
-            font-size: 0.75em;
+            font-size: 10px;
+            white-space: nowrap;
+        }
+
+        #acevegantt-label a {
+            text-decoration: none;
+            color: inherit;
+            transition: opacity 0.3s ease;
+            display: block;
+        }
+
+        #acevegantt-label a:hover {
+            opacity: 0.8;
         }
         
         @media (max-width: 768px) {
@@ -186,12 +206,20 @@
                 flex: 1;
                 min-width: 80px;
             }
+
+            #acevegantt-label {
+                padding: 3px 6px;
+            }
+
+            #acevegantt-label h3 {
+                font-size: 5px;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="branding">
-        <h3>acevegantt.</h3>
+    <div id="acevegantt-label">
+        <h3><a href="https://acevegantt.jaisal.in" target="_blank" rel="noopener noreferrer">acevegantt.</a></h3>
     </div>
     <div id="login-form">
         <h2>Admin Login</h2>
@@ -201,7 +229,7 @@
     </div>
 
     <div id="admin-panel" style="display: none;">
-        <h1>Admin Panel</h1>
+        <h1>Admin Console</h1>
         <button id="logoutButton" onclick="logout()">Logout</button>
         <button onclick="viewUserInterface()">View Chart</button>
         <h2>Add/Edit Task</h2>
@@ -232,7 +260,7 @@
             </thead>
             <tbody></tbody>
         </table>
-		<br>
+        <br>
         <button onclick="exportToCsv()">Export to CSV</button>
         <input type="file" id="csvFile" accept=".csv" style="display: none;">
         <button onclick="document.getElementById('csvFile').click()">Import from CSV</button>
