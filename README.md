@@ -5,7 +5,7 @@ acevegantt is a free and open-source Gantt chart implementation for managing aca
 
 ![acevegantt Main Interface](assets/screenshots/main_interface.jpg)
 
-![acevegantt Admin Panel](assets/screenshots/admin_panel.jpg)
+![acevegantt Admin Console](assets/screenshots/admin_console.jpg)
 
 ## Requirements 📋
 
