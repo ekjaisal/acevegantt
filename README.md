@@ -35,12 +35,12 @@
 
 8. Run `node server.js` to start the local server. Access the chart interface from [http://localhost:5000](http://localhost:5000) and the admin console from [http://localhost:5000/admin](http://localhost:5000/admin).
 
-9. To thoroughly test the implementation and to see the live preview of modifications, run the local sever using  `nodemon server.js` instead of `node server.js`.
+9. To thoroughly test the implementation and see the live preview of modifications, run the local server using the `nodemon server.js` command instead of `node server.js`.
 
 ## Deployment 🚀
 
-1. Choose a hosting platform for deployment based on the project requirements (a generous, permissive free tier for smaller projects or a paid tier for larger projects).
-2. Set up the environment variables from the <u>.env</u> file and any others as the hosting platform requires.
+1. Choose a hosting platform for deployment based on the project requirements—one with a generous, permissive free tier for smaller projects or a paid option for larger projects.
+2. Set up the environment variables from the <u>.env</u> file and any others based on the requirements of the hosting platform.
 3. Deploy the code following the hosting platform's guidelines.
 
 ## Third-Party Libraries and Services 🛠️
