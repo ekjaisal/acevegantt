@@ -6,7 +6,7 @@ authors:
     given-names: "Jaisal"
     email: "mail@jaisal.in"
     orcid: "https://orcid.org/0000-0003-3535-0273"
-title: "acevegantt: A Free, and Open-source Gantt Chart Implementation for Managing Academic Events"
+title: "acevegantt: A Free and Open-source Full Stack Gantt Chart for Academic Events"
 version: 1.0.0
 date-released: 2024
 url: "https://acevegantt.jaisal.in"
