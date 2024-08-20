@@ -7,7 +7,7 @@
 
 ![acevegantt Admin Console](assets/screenshots/admin_console.jpg)
 
-## Requirements ☑️
+## Requirements 📋
 
 - [Node.js](https://nodejs.org)
 - npm (usually comes with Node.js)
