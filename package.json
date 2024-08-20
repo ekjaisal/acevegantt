@@ -7,10 +7,10 @@
     "dev": "nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["gantt", "project management", "task visualization"],
+  "keywords": ["gantt", "event management", "task visualisation"],
   "author": "Jaisal E. K.",
   "license": "BSD-3-Clause",
-  "description": "acevegantt: A Free, and Open-source Gantt Chart Implementation for Managing Academic Events",
+  "description": "acevegantt: A Free and Open-source Full-stack Gantt Chart Implementation for Managing Academic Events",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
