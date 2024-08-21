@@ -8,6 +8,7 @@ authors:
     orcid: "https://orcid.org/0000-0003-3535-0273"
 title: "acevegantt: A Free and Open-source Full-stack Gantt Chart Implementation for Managing Academic Events"
 version: v1.0.0
+doi: 10.5281/zenodo.13352349
 date-released: 2024-08-21
 url: "https://acevegantt.jaisal.in"
 repository-code: "https://github.com/ekjaisal/acevegantt"
