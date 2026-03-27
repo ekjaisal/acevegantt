@@ -66,4 +66,4 @@ This setup is provided as-is, without any warranties. Users are responsible for 
 
 ## Acknowledgements 🤝🏾
 
-*acevegantt.* has benefitted significantly from the assistance of Anthropic's [Claude 3.5 Sonnet](https://www.anthropic.com/news/claude-3-5-sonnet) with all the heavy lifting associated with coding and some of the many ideas, suggestions, and feedback from [Sarah Harniswala](https://github.com/SarahHarniswala).
+*acevegantt.* has benefited significantly from the assistance of Anthropic's [Claude 3.5 Sonnet](https://www.anthropic.com/news/claude-3-5-sonnet) with all the heavy lifting associated with coding and some of the many ideas, suggestions, and feedback from [Sarah Harniswala](https://github.com/SarahHarniswala).
